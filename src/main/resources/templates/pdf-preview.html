@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layouts/main">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="renderer" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>文件预览</title>
+</head>
+
+<body>
+<div align="center" id="media-preview">
+    <pdf-viewer id="pdfobject_viewer" th:url="${fileUrl}"></pdf-viewer>
+</div>
+<script type="text/javascript" src="/js/jquery.min-1.10.2.js"></script>
+<script type="text/javascript" src="/js/pdfobject-2.1.1.js"></script>
+<script type="text/javascript">
+    $(function() {
+        var options = {
+            width: "800px",
+            height: "800px",
+            pdfOpenParams: { scrollbars: '0', toolbar: '0', statusbar: '0'} // 禁用工具栏
+        };
+
+        <!-- 刷新页面会自动下载文件 -->
+        PDFObject.embed(
+            $("#pdfobject_viewer").attr("url"),
+            "#pdfobject_viewer",
+            options
+        );
+    });
+
+    function getUrlParam(param){
+        return new URLSearchParams(window.location.search).get(param);
+    }
+</script>
+</body>
+</html>

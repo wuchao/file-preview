@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: OnlineFilePreview
+  mvc:
+    favicon:
+      enabled: false
+    static-path-pattern: /**
+  resources:
+    static-locations: /,classpath:/resources/,classpath:/static/
+server:
+  port: 8088
+
+# LibreOffice 的 bin 目录
+libreoffice:
+  bin:
+    file-path: D:/Program Files/LibreOffice/program/soffice.bin
