@@ -1,5 +1,8 @@
 package com.github.wuchao.filepreview.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 public abstract class CommandUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(CommandUtils.class);
 
     private CommandUtils() {
     }
@@ -17,6 +22,7 @@ public abstract class CommandUtils {
      * @param command
      */
     public static void execCommand(String command) throws IOException, InterruptedException {
+        log.info("execute file format convert command: {}.", command);
         String osName = System.getProperty("os.name");
         ProcessBuilder builder;
 
@@ -43,7 +49,7 @@ public abstract class CommandUtils {
              BufferedReader br = new BufferedReader(isr);) {
             String line;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
+                log.info(line);
             }
         }
 

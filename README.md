@@ -1,4 +1,5 @@
 # file-preview
 
+[PDFObject](https://pdfobject.com/)（使用）
 
-[pdf.js](http://mozilla.github.io/pdf.js/getting_started/)
+[PDF.js](http://mozilla.github.io/pdf.js/getting_started/)

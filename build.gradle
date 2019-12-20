@@ -62,6 +62,7 @@ dependencies {
 
     compile "org.apache.commons:commons-lang3:${commons_lang_version}"
     compile "commons-io:commons-io:${commons_io_version}"
+//    compile "commons-collections:commons-collections:${commons_collections_version}"
 
     compile "org.apache.logging.log4j:log4j-api:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-core:${log4j_version}"

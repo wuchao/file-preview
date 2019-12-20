@@ -22,7 +22,7 @@ public class FileDownloadController {
      * 下载文件
      *
      * @param fileUrl  远程文件地址
-     * @param filename 自定义的文件名称
+     * @param fileName 自定义的文件名称
      * @param response
      * @return
      * @throws IOException
@@ -31,9 +31,10 @@ public class FileDownloadController {
      */
     @GetMapping("/download")
     public ResponseEntity filePreview(@RequestParam String fileUrl,
-                                      @RequestParam(required = false, defaultValue = "") String filename,
+                                      @RequestParam(required = false, defaultValue = "") String fileName,
+                                      @RequestParam(required = false, defaultValue = "") String fileExt,
                                       HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
-        FileUtils.downloadFile(fileUrl, filename, false, response);
+        FileUtils.downloadFileFromURLUsingNIO(fileUrl, fileName, false, response);
         return ResponseEntity.ok().build();
     }
 

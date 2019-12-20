@@ -19,6 +19,9 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 
 public abstract class FileUtils {
 
@@ -41,42 +44,131 @@ public abstract class FileUtils {
      * 预览文件
      *
      * @param fileUrl  远程文件地址
-     * @param filename 自定义的文件名称
+     * @param fileName 自定义的文件名称
      * @param response
      */
-    public static void previewFile(String fileUrl, String filename, HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
-        downloadFile(fileUrl, filename, true, response);
+    public static void previewFile(String fileUrl, String fileName, HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
+        downloadFileFromURLUsingNIO(fileUrl, fileName, true, response);
     }
 
     /**
-     * @param inputStream
+     * 暂时先默认转 pdf
+     *
+     * @param filepath
      * @param contentType
-     * @param filename
      * @return
      * @throws IOException
      * @throws InterruptedException
      */
-    public static String convertFileFormat(InputStream inputStream, String contentType, String filename) throws IOException, InterruptedException {
-//        String tmpdir = System.getProperty("java.io.tmpdir");
-        String tmpdir = System.getProperty("user.dir") + File.separator;
-        String filepath = tmpdir + filename;
-        try (FileOutputStream outputStream = new FileOutputStream(filepath)) {
-            // 下载文件到本地
-            IOUtils.copy(inputStream, outputStream);
-            // 转换文件
-            return OfficeConverter.convertOfficeByLibreOffice(filepath, null, FileFormatEnum.PDF.getName());
+    public static String convertFileFormat(String filepath, String contentType) throws IOException, InterruptedException {
+        // 转换文件
+        return OfficeConverter.convertOfficeByLibreOffice(filepath, null, FileFormatEnum.PDF.getName());
+    }
+
+    /*private static void downloadOrPreviewFile(String fileName, boolean previewFile, InputStream inputStream, HttpServletResponse response) throws IOException, InterruptedException {
+        if (previewFile && ArrayUtils.contains(convertToPdfFormats, getFileExt(fileName))) {
+            // 预览文件
+            String targetFilepath = convertFileFormat(inputStream, getMimeType(fileName), fileName);
+            downloadFileFromLocalSystem(targetFilepath, null, true, response);
+        } else {
+            // 下载文件
+            setResponse(response, fileName, previewFile);
+            copy(inputStream, response.getOutputStream());
+        }
+    }*/
+
+
+    /**
+     * 下载文件（NIO）
+     * [Download a File From an URL in Java](https://www.baeldung.com/java-download-file)
+     *
+     * @param fileUrl     远程文件地址
+     * @param fileName    自定义的文件名称
+     * @param previewFile
+     * @param response
+     */
+    public static void downloadFileFromURLUsingNIO(String fileUrl,
+                                                   String fileName,
+                                                   boolean previewFile,
+                                                   HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
+
+        if (StringUtils.isNotBlank(fileUrl)) {
+            // 文件拓展名
+            String fileExt;
+
+            if (StringUtils.isNotBlank(fileName)) {
+                fileExt = getFileExt(fileName);
+                if (StringUtils.isBlank(fileExt)) {
+                    fileName += ("." + fileExt);
+                }
+            } else {
+                fileExt = getFileExt(fileUrl);
+                if (StringUtils.isNotBlank(fileExt)) {
+                    fileName = getFileName(fileUrl);
+                }
+            }
+
+            // URL 中没有文件名称和拓展名，用 URLConnection 下载预览
+            if (StringUtils.isBlank(getFileExt(fileUrl))) {
+                downloadFileFromURLUsingURLConn(fileUrl, fileName, previewFile, response);
+                return;
+            }
+
+            String tmpdir = getTempDir();
+            String filePath = tmpdir + fileName;
+            ReadableByteChannel readChannel = null;
+            FileChannel writeChannel = null;
+
+            try (InputStream urlInputStream = new URL(fileUrl).openStream();
+                 FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
+                readChannel = Channels.newChannel(urlInputStream);
+                writeChannel = fileOutputStream.getChannel();
+
+                long size = writeChannel.transferFrom(readChannel, 0, Long.MAX_VALUE);
+
+                if (size > 0) {
+                    if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
+                        // 预览文件
+
+                        log.info("download file from URL using NIO.");
+                        String targetFilepath = convertFileFormat(filePath, getMimeType(fileName));
+                        downloadFileFromLocalSystem(targetFilepath, null, true, response);
+
+                    } else {
+                        // 下载文件
+
+                        try (InputStream inputStream = new FileInputStream(filePath)) {
+                            setResponse(response, fileName, previewFile);
+                            copy(inputStream, response.getOutputStream());
+                        }
+                    }
+                }
+
+            } finally {
+                if (writeChannel != null) {
+                    writeChannel.close();
+                }
+                if (readChannel != null) {
+                    readChannel.close();
+                }
+            }
         }
     }
 
     /**
-     * 下载文件
+     * 下载文件（URLConnection）
+     * [Java HttpURLConnection to download file from an HTTP URL](https://www.codejava.net/java-se/networking/use-httpurlconnection-to-download-file-from-an-http-url)
      *
      * @param fileUrl     远程文件地址
-     * @param filename    自定义的文件名称
+     * @param fileName    自定义的文件名称
      * @param previewFile
      * @param response
      */
-    public static void downloadFile(String fileUrl, String filename, boolean previewFile, HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
+    public static void downloadFileFromURLUsingURLConn(String fileUrl,
+                                                       String fileName,
+                                                       boolean previewFile,
+                                                       HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
+
         if (StringUtils.isNotBlank(fileUrl)) {
             URL url = new URL(fileUrl);
             URLConnection conn = url.openConnection();
@@ -85,33 +177,47 @@ public abstract class FileUtils {
             // 防止屏蔽程序抓取而返回403错误
             conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 
-            String fileExt = getFileExtByMimeType(conn.getContentType());
-            if (StringUtils.isNotBlank(filename)) {
-                if (!filename.contains(".")
-                        || !filename.substring(filename.lastIndexOf(".") + 1).equalsIgnoreCase(fileExt)) {
-                    filename += ("." + fileExt);
-                }
-            } else {
+            // 文件名
+            if (StringUtils.isBlank(fileName)) {
                 if (ArrayUtils.contains(fileFormats, fileUrl.substring(fileUrl.lastIndexOf(".") + 1))) {
-                    filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+                    fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
                 }
-                if (StringUtils.isBlank(filename) && conn.getHeaderField("Content-Disposition") != null) {
+                if (StringUtils.isBlank(fileName) && conn.getHeaderField("Content-Disposition") != null) {
                     String contentDisposition = new String(conn
                             .getHeaderField("Content-Disposition")
                             .getBytes("ISO-8859-1"), "GBK");
-                    filename = contentDisposition.substring(contentDisposition.indexOf("filename=") + ("filename=".length()));
+                    fileName = contentDisposition.substring(contentDisposition.indexOf("filename=") + ("filename=".length()));
                 }
+            }
+
+            // 文件拓展名
+            String fileExt = getFileExtByMimeType(conn.getContentType());
+            if (StringUtils.isBlank(fileExt)) {
+                fileExt = getFileExt(fileName);
             }
 
             try (InputStream inputStream = conn.getInputStream()) {
                 if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
                     // 预览文件
-                    String targetFilepath = convertFileFormat(inputStream, conn.getContentType(), filename);
-                    downloadSystemFile(targetFilepath, null, true, response);
+
+                    log.info("download file from URL using URLConnection.");
+                    String tmpdir = getTempDir();
+                    String filepath = tmpdir + fileName;
+                    try (FileOutputStream outputStream = new FileOutputStream(filepath);
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                        // 下载文件到本地
+                        copy(inputStream, bufferedOutputStream);
+                    }
+                    // 转换文件格式
+                    String targetFilepath = convertFileFormat(filepath, conn.getContentType());
+                    // 预览文件
+                    downloadFileFromLocalSystem(targetFilepath, null, true, response);
+
                 } else {
                     // 下载文件
-                    setResponse(response, filename, previewFile);
-                    IOUtils.copy(inputStream, response.getOutputStream());
+
+                    setResponse(response, fileName, previewFile);
+                    copy(inputStream, response.getOutputStream());
                 }
             }
         }
@@ -120,37 +226,60 @@ public abstract class FileUtils {
     /**
      * 下载本地系统文件
      *
-     * @param filepath
-     * @param filename
+     * @param filePath
+     * @param fileName
+     * @param previewFile 是否预览文件
      * @param response
      */
-    public static void downloadSystemFile(String filepath, String filename, boolean previewFile, HttpServletResponse response) throws IOException, InterruptedException {
-        if (StringUtils.isNotBlank(filepath)) {
-            try (InputStream inputStream = new FileInputStream(filepath)) {
-                // 文件拓展名
-                String fileExt = getFileExt(filepath);
+    public static void downloadFileFromLocalSystem(String filePath,
+                                                   String fileName,
+                                                   boolean previewFile,
+                                                   HttpServletResponse response) throws IOException, InterruptedException {
 
-                // 文件名
-                if (StringUtils.isBlank(filename)) {
-                    filename = filepath.substring(filepath.lastIndexOf(File.separator) + 1);
-                } else {
-                    if (!filename.contains(".")
-                            || !filename.substring(filename.lastIndexOf(".") + 1).equalsIgnoreCase(fileExt)) {
-                        filename += ("." + fileExt);
-                    }
+        if (StringUtils.isNotBlank(filePath)) {
+            // 文件拓展名
+            String fileExt = getFileExt(filePath);
+
+            // 文件名
+            if (StringUtils.isBlank(fileName)) {
+                fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+            } else {
+                if (!fileName.contains(".")
+                        || !fileName.substring(fileName.lastIndexOf(".") + 1).equalsIgnoreCase(fileExt)) {
+                    fileName += ("." + fileExt);
                 }
+            }
 
-                if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
-                    // 预览文件
-                    String targetFilepath = convertFileFormat(inputStream, FileUtils.getMimeType(filepath), filename);
-                    downloadSystemFile(targetFilepath, null, true, response);
-                } else {
-                    // 下载文件
-                    setResponse(response, processFileName(filename), previewFile);
-                    IOUtils.copy(inputStream, response.getOutputStream());
+            if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
+                // 预览文件
+
+                String targetFilepath = convertFileFormat(filePath, FileUtils.getMimeType(filePath));
+                downloadFileFromLocalSystem(targetFilepath, null, true, response);
+
+            } else {
+                // 下载文件
+
+                try (InputStream inputStream = new FileInputStream(filePath)) {
+                    setResponse(response, processFileName(fileName), previewFile);
+                    copy(inputStream, response.getOutputStream());
                 }
             }
         }
+    }
+
+    /**
+     * 从 path 或 URL 中获取文件名称
+     *
+     * @param filePath
+     * @return
+     */
+    public static String getFileName(String filePath) {
+        if (filePath.lastIndexOf("/") >= 0) {
+            return filePath.substring(filePath.lastIndexOf("/") + 1);
+        } else if (filePath.lastIndexOf("\\") >= 0) {
+            return filePath.substring(filePath.lastIndexOf("\\") + 1);
+        }
+        return null;
     }
 
     /**
@@ -168,11 +297,11 @@ public abstract class FileUtils {
     /**
      * 获取 mimeType
      *
-     * @param fileUrl
+     * @param fileName
      * @return
      */
-    public static String getMimeType(String fileUrl) {
-        return URLConnection.getFileNameMap().getContentTypeFor(fileUrl);
+    public static String getMimeType(String fileName) {
+        return URLConnection.getFileNameMap().getContentTypeFor(fileName);
     }
 
     /**
@@ -190,39 +319,39 @@ public abstract class FileUtils {
     /**
      * 处理文件名称，防止乱码
      *
-     * @param filename
+     * @param fileName
      * @return
      */
-    public static String processFileName(String filename) {
+    public static String processFileName(String fileName) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         if (request != null) {
             String userAgent = request.getHeader("USER-AGENT");
             try {
                 if (userAgent.toUpperCase().indexOf("MSIE") > 0) {
-                    filename = URLEncoder.encode(filename, "UTF-8");
+                    fileName = URLEncoder.encode(fileName, "UTF-8");
                 } else {
                     // Google Chrome 浏览器使用 fileName = URLEncoder.encode(fileName, "UTF-8");
-                    filename = new String(filename.getBytes("UTF-8"), "ISO8859-1");
+                    fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
-        return filename;
+        return fileName;
     }
 
     /**
      * 设置文件下载时的请求响应流
      *
      * @param response
-     * @param filename
+     * @param fileName
      * @param previewFile
      */
-    public static void setResponse(HttpServletResponse response, String filename, boolean previewFile) {
+    public static void setResponse(HttpServletResponse response, String fileName, boolean previewFile) {
         if (previewFile) {
             // 预览文件
 
-            response.reset();
+//            response.reset();
             response.setContentType("application/pdf;charset=UTF-8");
 
         } else {
@@ -230,7 +359,32 @@ public abstract class FileUtils {
 
             response.setCharacterEncoding("UTF-8");
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            response.setHeader("Content-Disposition", "attachment;filename=" + filename);
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        }
+    }
+
+    /**
+     * 获取临时文件目录
+     *
+     * @return
+     */
+    public static String getTempDir() {
+//        String tmpdir = System.getProperty("java.io.tmpdir");
+        String tmpdir = System.getProperty("user.dir") + File.separator;
+        return tmpdir;
+    }
+
+    /**
+     * 输入流转输出流
+     *
+     * @param inputStream
+     * @param outputStream
+     * @throws IOException
+     */
+    public static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
+        int i = IOUtils.copy(inputStream, outputStream);
+        if (i == -1) {
+            IOUtils.copyLarge(inputStream, outputStream);
         }
     }
 
