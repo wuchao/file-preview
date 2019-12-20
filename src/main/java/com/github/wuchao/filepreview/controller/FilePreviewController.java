@@ -26,13 +26,11 @@ public class FilePreviewController {
      * 预览文件
      *
      * @param fileUrl  远程文件地址
-     * @param fileName 自定义的文件名称
      * @param fileExt  文件拓展名
      * @return
      */
     @GetMapping("/onlinePreview")
     public String onlinePreview(@RequestParam String fileUrl,
-                                @RequestParam(required = false, defaultValue = "") String fileName,
                                 @RequestParam(required = false, defaultValue = "pdf") String fileExt,
                                 Model model) {
         model.addAttribute("fileUrl", "/file/onlinePreviewFile?fileUrl=" + fileUrl + "&fileExt=" + fileExt);
