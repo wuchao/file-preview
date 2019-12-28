@@ -1,25 +1,29 @@
 package com.github.wuchao.filepreview.util;
 
-import lombok.extern.slf4j.Slf4j;
+import com.github.wuchao.filepreview.common.Constants;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 
-@Slf4j
 @Component
 public class OfficeConverter {
+
+    private static final Logger log = LoggerFactory.getLogger(OfficeConverter.class);
 
     /**
      * LibreOffice 的 bin 目录
      */
-    private static String LIBRE_OFFICE_BIN_FILE_PATH;
+    private static String office2PDFCommand;
 
-    @Value("${libreoffice.bin.file-path}")
-    public void setLibreOfficeBinFilePath(String libreOfficeBinFilePath) {
-        OfficeConverter.LIBRE_OFFICE_BIN_FILE_PATH = libreOfficeBinFilePath;
+    @Value("${file.office-to-pdf-command}")
+    public void setLibreOfficeBinFilePath(String office2PDFCommand) {
+        OfficeConverter.office2PDFCommand = office2PDFCommand;
     }
 
     /**
@@ -50,7 +54,9 @@ public class OfficeConverter {
      * @param docPath      源文件位置
      * @param targetDir    目标文件目录
      * @param targetFormat 目标文件格式
-     * @return
+     * @return 转换后的目标文件地址
+     * @throws IOException
+     * @throws InterruptedException
      */
     public static String convertOfficeByLibreOffice(String docPath, String targetDir, String targetFormat) throws IOException, InterruptedException {
         if (StringUtils.isBlank(docPath) || docPath.contains(" ")) {
@@ -64,23 +70,28 @@ public class OfficeConverter {
             targetDir = docPath.substring(0, fileFileSeparatorIndex);
         }
 
-        StringBuilder command = new StringBuilder()
-                .append("\"")
-                .append(LIBRE_OFFICE_BIN_FILE_PATH)
-                .append("\"")
-                .append(" --headless --invisible --convert-to ")
-                .append(targetFormat).append(" ").append(docPath)
-                .append(" --outdir ").append(targetDir);
+        // libre office 文档格式转换命令
+        String command = null;
 
-        // 执行文档转换命令
-        CommandUtils.execCommand(command.toString());
+        if (Constants.FILE_EXT_PDF.equalsIgnoreCase(targetFormat)) {
+            command = String.format(office2PDFCommand, targetFormat, docPath, targetDir);
+        }
 
-        // 返回转换后的目标文件的文件路径
-        return new StringBuilder()
-                .append(targetDir)
-                .append(targetDir.endsWith(File.separator) ? "" : File.separator)
-                .append(docPath.substring(fileFileSeparatorIndex + 1).replace(docPath.substring(docPath.lastIndexOf('.') + 1), targetFormat))
-                .toString();
+        if (StringUtils.isNotBlank(command)) {
+            log.info(command);
+
+            // 执行文档转换命令
+            CommandUtils.execCommand(command);
+
+            // 返回转换后的目标文件的文件路径
+            return new StringBuilder()
+                    .append(targetDir)
+                    .append(targetDir.endsWith(File.separator) ? "" : File.separator)
+                    .append(docPath.substring(fileFileSeparatorIndex + 1).replace(docPath.substring(docPath.lastIndexOf('.') + 1), targetFormat))
+                    .toString();
+        }
+
+        return Strings.EMPTY;
     }
 
 }

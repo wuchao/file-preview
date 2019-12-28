@@ -4,7 +4,6 @@ import com.github.wuchao.filepreview.util.FileUtils;
 import org.apache.tika.mime.MimeTypeException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,7 +14,6 @@ import java.io.IOException;
  * 文件下载
  */
 @RestController
-@RequestMapping("/file")
 public class FileDownloadController {
 
     /**

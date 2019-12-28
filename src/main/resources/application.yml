@@ -10,7 +10,10 @@ spring:
 server:
   port: 8088
 
-# LibreOffice 的 bin 目录
-libreoffice:
+# Libre Office 的 bin 目录
+libre-office:
   bin:
     file-path: D:/Program Files/LibreOffice/program/soffice.bin
+
+file:
+  office-to-pdf-command: ${libre-office.bin.file-path} --headless --invisible --convert-to %s %s --outdir %s

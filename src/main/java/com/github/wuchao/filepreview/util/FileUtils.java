@@ -1,6 +1,6 @@
 package com.github.wuchao.filepreview.util;
 
-import com.github.wuchao.filepreview.enums.FileFormatEnum;
+import com.github.wuchao.filepreview.common.Constants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,14 +31,36 @@ public abstract class FileUtils {
     }
 
     /**
-     * 文档格式
+     * 需要转换成 PDF 格式预览的常见文档格式
      */
-    public static String[] fileFormats = {"pdf", "doc", "docx",};
+    public static String[] convertToPdfExtensions = {"doc", "docx"};
 
     /**
-     * 需要转换成 PDF 格式预览的文档格式
+     * 常见图片格式
      */
-    public static String[] convertToPdfFormats = {"doc", "docx",};
+    public static String[] imageExtensions = {
+            "bmp", "jpg", "jpeg", "png", "gif"
+    };
+
+    /**
+     * 常见压缩格式
+     */
+    public static String[] compressExtensions = {
+            "zip", "rar", "7z", "tar", "jar"
+    };
+
+    /**
+     * 预览时，是否需要转换源文件格式，如果不需要则直接用流传输到前端（即文件下载）
+     *
+     * @param fileExt
+     * @return
+     */
+    public static boolean shouldConvertPreviewFileFormat(String fileExt) {
+        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * 预览文件
@@ -52,17 +74,19 @@ public abstract class FileUtils {
     }
 
     /**
-     * 暂时先默认转 pdf
-     *
-     * @param filepath
-     * @param contentType
-     * @return
+     * @param filePath 源文件地址
+     * @return 转换后的目标文件地址
      * @throws IOException
      * @throws InterruptedException
      */
-    public static String convertFileFormat(String filepath, String contentType) throws IOException, InterruptedException {
-        // 转换文件
-        return OfficeConverter.convertOfficeByLibreOffice(filepath, null, FileFormatEnum.PDF.getName());
+    public static String convertFileFormat(String filePath) throws IOException, InterruptedException {
+        String fileExt = getFileExt(filePath);
+        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
+            // 转换文件
+            return OfficeConverter.convertOfficeByLibreOffice(filePath, null, Constants.FILE_EXT_PDF);
+        } else {
+            return filePath;
+        }
     }
 
     /*private static void downloadOrPreviewFile(String fileName, boolean previewFile, InputStream inputStream, HttpServletResponse response) throws IOException, InterruptedException {
@@ -127,11 +151,11 @@ public abstract class FileUtils {
                 long size = writeChannel.transferFrom(readChannel, 0, Long.MAX_VALUE);
 
                 if (size > 0) {
-                    if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
+                    if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
                         // 预览文件
 
                         log.info("download file from URL using NIO.");
-                        String targetFilepath = convertFileFormat(filePath, getMimeType(fileName));
+                        String targetFilepath = convertFileFormat(filePath);
                         downloadFileFromLocalSystem(targetFilepath, null, true, response);
 
                     } else {
@@ -143,7 +167,13 @@ public abstract class FileUtils {
                         }
                     }
                 }
-
+            } catch (Exception e) {
+                if (e instanceof FileNotFoundException) {
+                    log.error("找不到指定文件");
+                } else {
+                    log.error(e.getMessage());
+                }
+                throw e;
             } finally {
                 if (writeChannel != null) {
                     writeChannel.close();
@@ -179,7 +209,7 @@ public abstract class FileUtils {
 
             // 文件名
             if (StringUtils.isBlank(fileName)) {
-                if (ArrayUtils.contains(fileFormats, fileUrl.substring(fileUrl.lastIndexOf(".") + 1))) {
+                if (fileUrl.lastIndexOf(".") > 0) {
                     fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
                 }
                 if (StringUtils.isBlank(fileName) && conn.getHeaderField("Content-Disposition") != null) {
@@ -197,19 +227,20 @@ public abstract class FileUtils {
             }
 
             try (InputStream inputStream = conn.getInputStream()) {
-                if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
+                if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
                     // 预览文件
 
                     log.info("download file from URL using URLConnection.");
                     String tmpdir = getTempDir();
-                    String filepath = tmpdir + fileName;
-                    try (FileOutputStream outputStream = new FileOutputStream(filepath);
+                    String filePath = tmpdir + fileName;
+
+                    // 下载文件到本地
+                    try (FileOutputStream outputStream = new FileOutputStream(filePath);
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                        // 下载文件到本地
                         copy(inputStream, bufferedOutputStream);
                     }
                     // 转换文件格式
-                    String targetFilepath = convertFileFormat(filepath, conn.getContentType());
+                    String targetFilepath = convertFileFormat(filePath);
                     // 预览文件
                     downloadFileFromLocalSystem(targetFilepath, null, true, response);
 
@@ -250,10 +281,10 @@ public abstract class FileUtils {
                 }
             }
 
-            if (previewFile && ArrayUtils.contains(convertToPdfFormats, fileExt)) {
+            if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
                 // 预览文件
 
-                String targetFilepath = convertFileFormat(filePath, FileUtils.getMimeType(filePath));
+                String targetFilepath = convertFileFormat(filePath);
                 downloadFileFromLocalSystem(targetFilepath, null, true, response);
 
             } else {
@@ -285,12 +316,12 @@ public abstract class FileUtils {
     /**
      * 获取文件拓展名
      *
-     * @param filepath
+     * @param filePath
      * @return
      */
-    public static String getFileExt(String filepath) {
-        return StringUtils.isNotBlank(filepath)
-                ? filepath.substring(filepath.lastIndexOf(".") + 1).toLowerCase()
+    public static String getFileExt(String filePath) {
+        return StringUtils.isNotBlank(filePath)
+                ? filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase()
                 : null;
     }
 
@@ -351,8 +382,8 @@ public abstract class FileUtils {
         if (previewFile) {
             // 预览文件
 
-//            response.reset();
-            response.setContentType("application/pdf;charset=UTF-8");
+            String mimeType = getMimeType(fileName);
+            response.setContentType(mimeType + ";charset=UTF-8");
 
         } else {
             // 下载文件
