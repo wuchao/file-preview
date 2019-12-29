@@ -33,7 +33,7 @@ public abstract class FileUtils {
     /**
      * 需要转换成 PDF 格式预览的常见文档格式
      */
-    public static String[] convertToPdfExtensions = {"doc", "docx"};
+    public static String[] convertToPdfExtensions = {"doc", "docx", "xls", "xlsx", "ppt", "pptx"};
 
     /**
      * 常见图片格式

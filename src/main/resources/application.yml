@@ -13,7 +13,8 @@ server:
 # Libre Office 的 bin 目录
 libre-office:
   bin:
-    file-path: D:/Program Files/LibreOffice/program/soffice.bin
+    file-path: "\"D:/Program Files/LibreOffice/program/soffice.bin\""
 
+# Windows 和 Linux 都兼容
 file:
   office-to-pdf-command: ${libre-office.bin.file-path} --headless --invisible --convert-to %s %s --outdir %s

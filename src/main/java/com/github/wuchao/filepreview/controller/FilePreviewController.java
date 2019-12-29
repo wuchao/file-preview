@@ -44,16 +44,16 @@ public class FilePreviewController {
             String viewTemplatePrefix = null;
             if (Constants.FILE_EXT_PDF.equalsIgnoreCase(fileExt)
                     || ArrayUtils.contains(FileUtils.convertToPdfExtensions, fileExt)) {
-                // pdf 文件
+                // 预览 pdf 文件
                 viewTemplatePrefix = "pdf";
             } else if (Constants.FILE_EXT_TXT.equalsIgnoreCase(fileExt)) {
-                // txt 纯文本文件
+                // 预览 txt 纯文本文件
                 viewTemplatePrefix = fileExt;
             } else if (ArrayUtils.contains(FileUtils.imageExtensions, fileExt)) {
-                // 图片文件
+                // 预览图片文件
                 viewTemplatePrefix = "image";
             } else if (ArrayUtils.contains(FileUtils.compressExtensions, fileExt)) {
-                // 压缩文件
+                // 预览压缩文件
                 viewTemplatePrefix = "compress";
             }
 

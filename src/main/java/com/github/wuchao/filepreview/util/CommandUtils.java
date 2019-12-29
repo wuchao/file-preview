@@ -45,7 +45,8 @@ public abstract class CommandUtils {
                 .start();
 
         try (InputStream fis = process.getInputStream();
-             InputStreamReader isr = new InputStreamReader(fis);
+             // 添加 GBK 是解决下面 log.info(line) 输出中文乱码的问题
+             InputStreamReader isr = new InputStreamReader(fis, "GBK");
              BufferedReader br = new BufferedReader(isr);) {
             String line;
             while ((line = br.readLine()) != null) {

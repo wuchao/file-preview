@@ -1,6 +1,5 @@
 package com.github.wuchao.filepreview.util;
 
-import com.github.wuchao.filepreview.common.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -22,60 +21,53 @@ public class OfficeConverter {
     private static String office2PDFCommand;
 
     @Value("${file.office-to-pdf-command}")
-    public void setLibreOfficeBinFilePath(String office2PDFCommand) {
+    public void setOffice2PDFCommand(String office2PDFCommand) {
         OfficeConverter.office2PDFCommand = office2PDFCommand;
     }
 
     /**
-     * word（doc/docx） 转 pdf
-     * C:\Program Files\LibreOffice\program>soffice.bin --headless --invisible --convert-to pdf C:\Users\xx.doc --outdir C:\Users
-     *
-     * @param docPath 源文件位置
-     * @return
-     */
-    public static String word2PdfByLibreOffice(String docPath) throws IOException, InterruptedException {
-        return convertOfficeByLibreOffice(docPath, docPath.substring(0, docPath.lastIndexOf(File.separator)), "pdf");
-    }
-
-    /**
-     * doc 转 docx
-     * C:\Program Files\LibreOffice\program>soffice.bin --headless --invisible --convert-to docx C:\Users\xx.doc --outdir C:\Users
-     *
-     * @param docPath 源文件位置
-     * @return
-     */
-    public static String doc2DocxByLibreOffice(String docPath) throws IOException, InterruptedException {
-        return convertOfficeByLibreOffice(docPath, docPath.substring(0, docPath.lastIndexOf(File.separator)), "docx");
-    }
-
-    /**
      * Office 文档格式转换
+     * <p>
+     * 已验证的操作：
+     * doc 转 docx
+     * doc/docx 转 pdf
+     * <p>
+     * xls 转 xlsx
+     * xls/xlsx 转 pdf
+     * <p>
+     * ppt 转 pptx
+     * ppt/pptx 转 pdf
      *
-     * @param docPath      源文件位置
+     * @param sourcePath   源文件位置
      * @param targetDir    目标文件目录
      * @param targetFormat 目标文件格式
      * @return 转换后的目标文件地址
      * @throws IOException
      * @throws InterruptedException
      */
-    public static String convertOfficeByLibreOffice(String docPath, String targetDir, String targetFormat) throws IOException, InterruptedException {
-        if (StringUtils.isBlank(docPath) || docPath.contains(" ")) {
-            return "Error:word 文件名不能包含空格";
+    public static String convertOfficeByLibreOffice(String sourcePath, String targetDir, String targetFormat) throws IOException, InterruptedException {
+        if (StringUtils.isBlank(sourcePath) || sourcePath.contains(" ")) {
+            throw new RuntimeException("Error:文件名不能包含空格");
+        }
+        if (StringUtils.isBlank(targetFormat)) {
+            throw new RuntimeException("Error:目标类型不能为空");
         }
 
-        int fileFileSeparatorIndex = docPath.lastIndexOf(File.separator);
+        // 源文件拓展名
+        String sourceFileExt = FileUtils.getFileExt(sourcePath);
+        if (StringUtils.isBlank(sourceFileExt)) {
+            throw new RuntimeException("Error:文件地址错误");
+        }
+
+        int fileFileLastSeparatorIndex = sourcePath.lastIndexOf(File.separator);
 
         // 设置文件转换输出目录
         if (StringUtils.isBlank(targetDir)) {
-            targetDir = docPath.substring(0, fileFileSeparatorIndex);
+            targetDir = sourcePath.substring(0, fileFileLastSeparatorIndex);
         }
 
         // libre office 文档格式转换命令
-        String command = null;
-
-        if (Constants.FILE_EXT_PDF.equalsIgnoreCase(targetFormat)) {
-            command = String.format(office2PDFCommand, targetFormat, docPath, targetDir);
-        }
+        String command = String.format(office2PDFCommand, targetFormat, sourcePath, targetDir);
 
         if (StringUtils.isNotBlank(command)) {
             log.info(command);
@@ -87,7 +79,9 @@ public class OfficeConverter {
             return new StringBuilder()
                     .append(targetDir)
                     .append(targetDir.endsWith(File.separator) ? "" : File.separator)
-                    .append(docPath.substring(fileFileSeparatorIndex + 1).replace(docPath.substring(docPath.lastIndexOf('.') + 1), targetFormat))
+                    .append(sourcePath
+                            .substring(fileFileLastSeparatorIndex + 1)
+                            .replace(sourcePath.substring(sourcePath.lastIndexOf('.') + 1), targetFormat))
                     .toString();
         }
 

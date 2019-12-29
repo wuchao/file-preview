@@ -29,6 +29,7 @@ public class FileUtilsTests {
         System.out.println(".html：" + FileUtils.getMimeType(".html"));
         System.out.println(".xhtml：" + FileUtils.getMimeType(".xhtml"));
         System.out.println(".xml：" + FileUtils.getMimeType(".xml"));
+        System.out.println(".md：" + FileUtils.getMimeType(".md"));
         System.out.println(".jpeg：" + FileUtils.getMimeType(".jpeg"));
         System.out.println(".jpg：" + FileUtils.getMimeType(".jpg"));
         System.out.println(".png：" + FileUtils.getMimeType(".png"));
