@@ -22,14 +22,11 @@ public class FileUtilsTests {
         System.out.println(".xls：" + FileUtils.getMimeType(".xls"));
         System.out.println(".xlsx：" + FileUtils.getMimeType(".xlsx"));
         System.out.println(".txt：" + FileUtils.getMimeType(".txt"));
-        System.out.println(".java：" + FileUtils.getMimeType(".java"));
-        System.out.println(".jsp：" + FileUtils.getMimeType(".jsp"));
         System.out.println(".js：" + FileUtils.getMimeType(".js"));
         System.out.println(".css：" + FileUtils.getMimeType(".css"));
         System.out.println(".html：" + FileUtils.getMimeType(".html"));
         System.out.println(".xhtml：" + FileUtils.getMimeType(".xhtml"));
         System.out.println(".xml：" + FileUtils.getMimeType(".xml"));
-        System.out.println(".md：" + FileUtils.getMimeType(".md"));
         System.out.println(".jpeg：" + FileUtils.getMimeType(".jpeg"));
         System.out.println(".jpg：" + FileUtils.getMimeType(".jpg"));
         System.out.println(".png：" + FileUtils.getMimeType(".png"));
@@ -38,6 +35,28 @@ public class FileUtilsTests {
 
         /**
          * 打印结果：
+         * pdf：application/pdf
+         * .pdf: application/pdf
+         * http://www.baidu.com/111.pdf：null
+         * D:/aaa.doc：application/msword
+         * bbb.docx：application/vnd.openxmlformats-officedocument.wordprocessingml.document
+         * .doc：application/msword
+         * .docx：application/vnd.openxmlformats-officedocument.wordprocessingml.document
+         * .ppt：application/vnd.ms-powerpoint
+         * .pptx：application/vnd.openxmlformats-officedocument.presentationml.presentation
+         * .xls：application/vnd.ms-excel
+         * .xlsx：application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+         * .txt：text/plain
+         * .js：application/x-javascript
+         * .css：text/css
+         * .html：text/html
+         * .xhtml：text/html
+         * .xml：text/xml
+         * .jpeg：image/jpeg
+         * .jpg：image/jpeg
+         * .png：image/png
+         * .mp4：video/mpeg4
+         * .mp3：audio/mp3
          */
     }
 

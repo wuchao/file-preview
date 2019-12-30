@@ -25,7 +25,6 @@ public class FileDownloadController {
      * @return
      * @throws IOException
      * @throws InterruptedException
-     * @throws MimeTypeException
      */
     @GetMapping("/download")
     public ResponseEntity filePreview(@RequestParam String fileUrl,
