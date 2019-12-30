@@ -140,6 +140,7 @@ public abstract class FileUtils {
 
             String tmpdir = getTempDir();
             String filePath = tmpdir + fileName;
+            String targetFilepath = null;
             ReadableByteChannel readChannel = null;
             FileChannel writeChannel = null;
 
@@ -155,7 +156,7 @@ public abstract class FileUtils {
                         // 预览文件
 
                         log.info("download file from URL using NIO.");
-                        String targetFilepath = convertFileFormat(filePath);
+                        targetFilepath = convertFileFormat(filePath);
                         downloadFileFromLocalSystem(targetFilepath, null, true, response);
 
                     } else {
@@ -167,6 +168,7 @@ public abstract class FileUtils {
                         }
                     }
                 }
+
             } catch (Exception e) {
                 if (e instanceof FileNotFoundException) {
                     log.error("找不到指定文件");
@@ -180,6 +182,14 @@ public abstract class FileUtils {
                 }
                 if (readChannel != null) {
                     readChannel.close();
+                }
+                // 删除源文件
+                if (StringUtils.isNotBlank(filePath)) {
+                    org.apache.commons.io.FileUtils.deleteQuietly(new File(filePath));
+                }
+                // 删除目标文件
+                if (StringUtils.isNotBlank(targetFilepath)) {
+                    org.apache.commons.io.FileUtils.deleteQuietly(new File(targetFilepath));
                 }
             }
         }
@@ -233,16 +243,28 @@ public abstract class FileUtils {
                     log.info("download file from URL using URLConnection.");
                     String tmpdir = getTempDir();
                     String filePath = tmpdir + fileName;
+                    String targetFilepath = null;
 
                     // 下载文件到本地
                     try (FileOutputStream outputStream = new FileOutputStream(filePath);
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+
                         copy(inputStream, bufferedOutputStream);
+                        // 转换文件格式
+                        targetFilepath = convertFileFormat(filePath);
+                        // 预览文件
+                        downloadFileFromLocalSystem(targetFilepath, null, true, response);
+
+                    } finally {
+                        // 删除源文件
+                        if (StringUtils.isNotBlank(filePath)) {
+                            org.apache.commons.io.FileUtils.deleteQuietly(new File(filePath));
+                        }
+                        // 删除目标文件
+                        if (StringUtils.isNotBlank(targetFilepath)) {
+                            org.apache.commons.io.FileUtils.deleteQuietly(new File(targetFilepath));
+                        }
                     }
-                    // 转换文件格式
-                    String targetFilepath = convertFileFormat(filePath);
-                    // 预览文件
-                    downloadFileFromLocalSystem(targetFilepath, null, true, response);
 
                 } else {
                     // 下载文件

@@ -40,22 +40,51 @@
                     return a[0].localeCompare(b[0]);
                 });
 
+                var file;
+                var node;
+                var dirMap = new Map();
+                var dirNameAry;
+                var dir;
+                var dirName;
                 var nodes = [];
+
                 for(var i = 0; i < files.length; i++){
-                    var file = files[i];
-                    var node;
+                    file = files[i];
+                    dirNameAry = file[0].split('/');
                     if(file[1].dir) {
-                        node = {
-                            "name": file[0],
-                            "children": [],
-                            "isParent": true
-                        };
+                        // file[0] 类似 images/icon/
+
+                        dirName = dirNameAry[dirNameAry.length - 2] + '/';
+                        if((dir = dirMap.get(file[0].substring(0, file[0].length - dirName.length))) != undefined) {
+                            node = {
+                                "name": dirName,
+                                "children": [],
+                                "isParent": true
+                            };
+                            dir.children.push(node);
+                            dirMap.set(file[0], node);
+                        } else {
+                            node = {
+                                "name": dirName,
+                                "children": [],
+                                "isParent": true
+                            };
+                            nodes.push(node);
+                            dirMap.set(file[0], node);
+                        }
+
                     } else {
+                        // file[0] 类似 images/icon.png
+
                         node = {
-                            "name": file[0]
+                            "name": dirNameAry[dirNameAry.length - 1]
                         };
+                        if(file[0].indexOf('/') > 0 && (dir = dirMap.get(file[0].substring(0, file[0].lastIndexOf('/') + 1))) != undefined) {
+                            dir.children.push(node);
+                        } else {
+                            nodes.push(node);
+                        }
                     }
-                    nodes.push(node);
                 }
                 // 构造文件目录树
                 initZTree("compress_viewer", nodes);

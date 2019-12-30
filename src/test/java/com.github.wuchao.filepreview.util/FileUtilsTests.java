@@ -38,6 +38,31 @@ public class FileUtilsTests {
 
         /**
          * 打印结果：
+         * pdf：null
+         * .pdf: application/pdf
+         * http://www.baidu.com/111.pdf：application/pdf
+         * D:/aaa.doc：null
+         * bbb.docx：null
+         * .doc：null
+         * .docx：null
+         * .ppt：null
+         * .pptx：null
+         * .xls：null
+         * .xlsx：null
+         * .txt：text/plain
+         * .java：text/plain
+         * .jsp：null
+         * .js：null
+         * .css：null
+         * .html：text/html
+         * .xhtml：null
+         * .xml：application/xml
+         * .md：null
+         * .jpeg：image/jpeg
+         * .jpg：image/jpeg
+         * .png：image/png
+         * .mp4：null
+         * .mp3：null
          */
     }
 

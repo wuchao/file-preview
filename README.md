@@ -1,4 +1,6 @@
 # file-preview
+文件在线预览，支持预览格式：pdf、doc/docx、xsl/xslx、ppt/pptx、txt、图片(png、jpg、jpeg、gif...)、压缩文件（zip、tar、7z...）。
+
 
 ### PDF 前段预览
 [PDFObject](https://pdfobject.com/)（使用）
