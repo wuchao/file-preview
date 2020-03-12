@@ -29,16 +29,24 @@ public class FilePreviewController {
      * 预览文件
      *
      * @param fileUrl  远程文件地址
-     * @param fileName 自定义的文件名称
+     * @param fileName 自定义的下载文件名称
      * @return
      */
-    @GetMapping("/onlineFilePreview")
+    @GetMapping("/onlinePreview")
     public String fileOnlinePreview(@RequestParam String fileUrl,
                                     @RequestParam(required = false, defaultValue = "") String fileName,
                                     Model model) {
         String fileExt;
-        if (StringUtils.isNotBlank(fileName)
-                && StringUtils.isNotBlank(fileExt = FileUtils.getFileExt(fileName))) {
+        if (StringUtils.isNotBlank(fileUrl)
+                && StringUtils.isNotBlank(fileExt = FileUtils.getFileExt(fileUrl))) {
+
+            if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt) && StringUtils.isNotBlank(fileName)) {
+                fileExt = FileUtils.getFileExt(fileName);
+            }
+
+            if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt)) {
+                return "404";
+            }
 
             fileExt = fileExt.toLowerCase();
             String viewTemplatePrefix = null;
@@ -89,10 +97,14 @@ public class FilePreviewController {
             FileUtils.previewFile(fileUrl, fileName, response);
         } catch (Exception e) {
             try {
-                log.info("重定向到 500 页面");
-                response.sendRedirect("/500");
+                log.error(e.getMessage());
+                if (e.getMessage().contains("response code: 403")) {
+                    response.sendRedirect("/403");
+                } else {
+                    response.sendRedirect("/500");
+                }
             } catch (IOException ex) {
-                log.error("重定向到 500 页面出错");
+                log.error(ex.getMessage());
             }
         }
     }

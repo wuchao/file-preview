@@ -4,10 +4,10 @@ buildscript {
         maven { url "http://maven.aliyun.com/nexus/content/repositories/central/" }
         maven { url "http://maven.aliyun.com/nexus/content/repositories/jcenter/" }
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url 'http://repo.spring.io/milestone' }
-        maven { url 'http://repo.spring.io/snapshot' }
-        maven { url 'http://repo.spring.io/plugins-release' }
-        maven { url 'http://repo.maven.apache.org/maven2' }
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+        maven { url 'https://repo.spring.io/plugins-release' }
+        maven { url 'https://repo.maven.apache.org/maven2' }
         maven { url 'https://repository.jboss.org/nexus/content/repositories/releases' }
         maven { url 'https://oss.sonatype.org/content/repositories/releases' }
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -20,11 +20,6 @@ buildscript {
         classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7"
         classpath "com.moowork.gradle:gradle-node-plugin:1.1.1"
         classpath "io.spring.gradle:dependency-management-plugin:0.6.1.RELEASE"
-        //jhipster-needle-gradle-buildscript-dependency - JHipster will add additional gradle build script plugins here
-        classpath("gradle.plugin.org.liquibase:liquibase-gradle-plugin:2.0.0") {
-            exclude(module: 'liquibase-core')
-        }
-        classpath "org.liquibase:liquibase-core:3.4.0"
     }
 }
 
@@ -42,10 +37,10 @@ repositories {
     maven { url "http://maven.aliyun.com/nexus/content/repositories/central/" }
     maven { url "http://maven.aliyun.com/nexus/content/repositories/jcenter/" }
     maven { url "https://plugins.gradle.org/m2/" }
-    maven { url 'http://repo.spring.io/milestone' }
-    maven { url 'http://repo.spring.io/snapshot' }
-    maven { url 'http://repo.spring.io/plugins-release' }
-    maven { url 'http://repo.maven.apache.org/maven2' }
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+    maven { url 'https://repo.spring.io/plugins-release' }
+    maven { url 'https://repo.maven.apache.org/maven2' }
     maven { url 'https://repository.jboss.org/nexus/content/repositories/releases' }
     maven { url 'https://oss.sonatype.org/content/repositories/releases' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -62,7 +57,6 @@ dependencies {
 
     compile "org.apache.commons:commons-lang3:${commons_lang_version}"
     compile "commons-io:commons-io:${commons_io_version}"
-//    compile "commons-collections:commons-collections:${commons_collections_version}"
 
     compile "org.apache.logging.log4j:log4j-api:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-core:${log4j_version}"

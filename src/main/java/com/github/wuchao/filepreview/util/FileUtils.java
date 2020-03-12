@@ -31,6 +31,18 @@ public abstract class FileUtils {
     }
 
     /**
+     * 所有可预览的文档格式
+     */
+    public static String[] previewExtensions = {
+            // convertToPdfExtensions
+            "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+            // imageExtensions
+            "bmp", "jpg", "jpeg", "png", "gif",
+            // compressExtensions
+            "zip", "rar", "7z", "tar", "jar"
+    };
+
+    /**
      * 需要转换成 PDF 格式预览的常见文档格式
      */
     public static String[] convertToPdfExtensions = {"doc", "docx", "xls", "xlsx", "ppt", "pptx"};
@@ -342,9 +354,12 @@ public abstract class FileUtils {
      * @return
      */
     public static String getFileExt(String filePath) {
-        return StringUtils.isNotBlank(filePath)
-                ? filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase()
-                : null;
+        if (StringUtils.isNotBlank(filePath)) {
+            if (filePath.indexOf(".") >= 0) {
+                return filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase();
+            }
+        }
+        return null;
     }
 
     /**
