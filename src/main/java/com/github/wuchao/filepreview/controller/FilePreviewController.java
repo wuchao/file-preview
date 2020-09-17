@@ -25,63 +25,59 @@ public class FilePreviewController {
 
     private static final Logger log = LoggerFactory.getLogger(OfficeConverter.class);
 
+
     /**
      * 预览文件
      *
      * @param fileUrl  远程文件地址
-     * @param fileName 自定义的下载文件名称
+     * @param fileName 远程文件名称
      * @return
      */
     @GetMapping("/onlinePreview")
     public String fileOnlinePreview(@RequestParam String fileUrl,
-                                    @RequestParam(required = false, defaultValue = "") String fileName,
+                                    @RequestParam String fileName,
                                     Model model) {
-        String fileExt;
-        if (StringUtils.isNotBlank(fileUrl)
-                && StringUtils.isNotBlank(fileExt = FileUtils.getFileExt(fileUrl))) {
 
-            if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt) && StringUtils.isNotBlank(fileName)) {
-                fileExt = FileUtils.getFileExt(fileName);
-            }
+        String fileExt = FileUtils.getFileExt(fileName);
 
-            if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt)) {
-                return "404";
-            }
+        if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt)) {
+            return "404";
+        }
 
-            fileExt = fileExt.toLowerCase();
-            String viewTemplatePrefix = null;
-            if (Constants.FILE_EXT_PDF.equalsIgnoreCase(fileExt)
-                    || ArrayUtils.contains(FileUtils.convertToPdfExtensions, fileExt)) {
-                // 预览 pdf 文件
-                viewTemplatePrefix = "pdf";
-            } else if (Constants.FILE_EXT_TXT.equalsIgnoreCase(fileExt)) {
-                // 预览 txt 纯文本文件
-                viewTemplatePrefix = fileExt;
-            } else if (ArrayUtils.contains(FileUtils.imageExtensions, fileExt)) {
-                // 预览图片文件
-                viewTemplatePrefix = "image";
-            } else if (ArrayUtils.contains(FileUtils.compressExtensions, fileExt)) {
-                // 预览压缩文件
-                viewTemplatePrefix = "compress";
-            }
+        fileExt = fileExt.toLowerCase();
+        String viewTemplatePrefix = null;
+        if (Constants.FILE_EXT_PDF.equalsIgnoreCase(fileExt)
+                || ArrayUtils.contains(FileUtils.convertToPdfExtensions, fileExt)) {
+            // 预览 pdf 文件
+            viewTemplatePrefix = "pdf";
+        } else if (Constants.FILE_EXT_TXT.equalsIgnoreCase(fileExt)) {
+            // 预览 txt 纯文本文件
+            viewTemplatePrefix = fileExt;
+        } else if (ArrayUtils.contains(FileUtils.imageExtensions, fileExt)) {
+            // 预览图片文件
+            viewTemplatePrefix = "image";
+        } else if (ArrayUtils.contains(FileUtils.compressExtensions, fileExt)) {
+            // 预览压缩文件
+            viewTemplatePrefix = "compress";
+        }
 
-            if (StringUtils.isNotBlank(viewTemplatePrefix)) {
-                model.addAttribute("fileUrl",
-                        "/previewFile?fileUrl=" + fileUrl
-                                + "&fileName=" + fileName);
+        if (StringUtils.isNotBlank(viewTemplatePrefix)) {
+            model.addAttribute("fileUrl",
+                    "/previewFile?fileUrl=" + fileUrl
+                            + "&fileName=" + fileName);
 
-                return viewTemplatePrefix + "-preview";
-            }
+            return viewTemplatePrefix + "-preview";
         }
 
         return "404";
     }
 
+
     /**
      * 预览文件
      *
      * @param fileUrl  远程文件地址
-     * @param fileName 自定义的文件名称
+     * @param fileName 远程文件名称
      * @param response
      * @return
      * @throws IOException
@@ -91,7 +87,7 @@ public class FilePreviewController {
     @GetMapping("/previewFile")
     @ResponseBody
     public void previewFile(@RequestParam String fileUrl,
-                            @RequestParam(required = false, defaultValue = "") String fileName,
+                            @RequestParam String fileName,
                             HttpServletResponse response) {
         try {
             FileUtils.previewFile(fileUrl, fileName, response);

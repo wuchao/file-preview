@@ -1,5 +1,7 @@
 package com.github.wuchao.filepreview.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +13,7 @@ public abstract class FileExtensionsUtil {
     public static final Map<String, String> fileExtensionMap;
 
     static {
-        fileExtensionMap = new HashMap<String, String>();
+        fileExtensionMap = new HashMap<>();
         // MS Office
         fileExtensionMap.put("doc", "application/msword");
         fileExtensionMap.put("dot", "application/msword");
@@ -74,6 +76,17 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("mp4", "video/mpeg4");
         // Audio
         fileExtensionMap.put("mp3", "audio/mp3");
+    }
+
+    public static String getExt(String contentType) {
+        if (StringUtils.isNotBlank(contentType)) {
+            for (Map.Entry t : FileExtensionsUtil.fileExtensionMap.entrySet()) {
+                if (contentType.equals(t.getValue())) {
+                    return (String) t.getKey();
+                }
+            }
+        }
+        return null;
     }
 
 }

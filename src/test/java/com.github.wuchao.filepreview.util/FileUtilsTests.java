@@ -74,4 +74,40 @@ public class FileUtilsTests {
          */
     }
 
+    @Test
+    public void testGetFileExtFromUrl() {
+        System.out.println(FileUtils.getFileExtFromUrl("D:/aaa.doc"));
+        System.out.println(FileUtils.getFileExtFromUrl("bbb.docx"));
+        System.out.println(FileUtils.getFileExtFromUrl("http://www.baidu.com/111.pdf"));
+        System.out.println(FileUtils.getFileExtFromUrl("http://www.baidu.com/111.pdf?filename=111.pdf"));
+        System.out.println(FileUtils.getFileExtFromUrl("http://www.baidu.com/downloadFile"));
+        System.out.println(FileUtils.getFileExtFromUrl("http://www.baidu.com/downloadFile?filename=111.pdf"));
+
+        /**
+         * 打印结果：
+         * doc
+         * null
+         * pdf
+         * pdf
+         * null
+         * pdf
+         */
+    }
+
+    @Test
+    public void testGetTempDir() {
+        System.out.println(System.getProperty("java.io.tmpdir"));
+        System.out.println(System.getProperty("user.dir"));
+
+        /**
+         * 打印结果：
+         *
+         * Windows：
+         * C:\Users\ecidi\AppData\Local\Temp\
+         * D:\IdeaProjects\wuchao\file-preview
+         *
+         */
+    }
+
+
 }

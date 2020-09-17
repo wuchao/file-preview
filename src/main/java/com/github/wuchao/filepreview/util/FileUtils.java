@@ -34,6 +34,8 @@ public abstract class FileUtils {
      * 所有可预览的文档格式
      */
     public static String[] previewExtensions = {
+            // pdf
+            "pdf",
             // convertToPdfExtensions
             "doc", "docx", "xls", "xlsx", "ppt", "pptx",
             // imageExtensions
@@ -61,6 +63,7 @@ public abstract class FileUtils {
             "zip", "rar", "7z", "tar", "jar"
     };
 
+
     /**
      * 预览时，是否需要转换源文件格式，如果不需要则直接用流传输到前端（即文件下载）
      *
@@ -74,6 +77,7 @@ public abstract class FileUtils {
         return false;
     }
 
+
     /**
      * 预览文件
      *
@@ -84,6 +88,7 @@ public abstract class FileUtils {
     public static void previewFile(String fileUrl, String fileName, HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
         downloadFileFromURLUsingNIO(fileUrl, fileName, true, response);
     }
+
 
     /**
      * @param filePath 源文件地址
@@ -128,33 +133,18 @@ public abstract class FileUtils {
                                                    boolean previewFile,
                                                    HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
 
-        if (StringUtils.isNotBlank(fileUrl)) {
+        if (StringUtils.isNotBlank(fileUrl) && StringUtils.isNotBlank(fileName)) {
             // 文件拓展名
-            String fileExt;
-
-            if (StringUtils.isNotBlank(fileName)) {
-                fileExt = getFileExt(fileName);
-                if (StringUtils.isBlank(fileExt)) {
-                    fileName += ("." + fileExt);
-                }
-            } else {
-                fileExt = getFileExt(fileUrl);
-                if (StringUtils.isNotBlank(fileExt)) {
-                    fileName = getFileName(fileUrl);
-                }
-            }
-
-            // URL 中没有文件名称和拓展名，用 URLConnection 下载预览
-            if (StringUtils.isBlank(getFileExt(fileUrl))) {
-                downloadFileFromURLUsingURLConn(fileUrl, fileName, previewFile, response);
-                return;
-            }
+            String fileExt = getFileExt(fileName);
 
             String tmpdir = getTempDir();
             String filePath = tmpdir + fileName;
             String targetFilepath = null;
             ReadableByteChannel readChannel = null;
             FileChannel writeChannel = null;
+
+            // 对文件 url 链接进行编码，避免文件 url 带中文的情况
+            fileUrl = HttpUtils.encodeUrl(fileUrl);
 
             try (InputStream urlInputStream = new URL(fileUrl).openStream();
                  FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
@@ -207,6 +197,7 @@ public abstract class FileUtils {
         }
     }
 
+
     /**
      * 下载文件（URLConnection）
      * [Java HttpURLConnection to download file from an HTTP URL](https://www.codejava.net/java-se/networking/use-httpurlconnection-to-download-file-from-an-http-url)
@@ -219,17 +210,19 @@ public abstract class FileUtils {
     public static void downloadFileFromURLUsingURLConn(String fileUrl,
                                                        String fileName,
                                                        boolean previewFile,
-                                                       HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
+                                                       HttpServletResponse response) throws IOException, InterruptedException {
 
-        if (StringUtils.isNotBlank(fileUrl)) {
+        if (StringUtils.isNotBlank(fileUrl) && StringUtils.isNotBlank(fileName)) {
+            // 对文件 url 链接进行编码，避免文件 url 带中文的情况
+            fileUrl = HttpUtils.encodeUrl(fileUrl);
             URL url = new URL(fileUrl);
             URLConnection conn = url.openConnection();
-            // 设置超时间为 10 秒
-            conn.setConnectTimeout(10000);
+            // 设置超时间为 60 秒
+            conn.setConnectTimeout(60000);
             // 防止屏蔽程序抓取而返回403错误
             conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 
-            // 文件名
+            /*// 文件名
             if (StringUtils.isBlank(fileName)) {
                 if (fileUrl.lastIndexOf(".") > 0) {
                     fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
@@ -246,9 +239,12 @@ public abstract class FileUtils {
             String fileExt = getFileExtByMimeType(conn.getContentType());
             if (StringUtils.isBlank(fileExt)) {
                 fileExt = getFileExt(fileName);
-            }
+            }*/
 
             try (InputStream inputStream = conn.getInputStream()) {
+                // 文件拓展名
+                String fileExt = getFileExt(fileName);
+
                 if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
                     // 预览文件
 
@@ -288,6 +284,7 @@ public abstract class FileUtils {
         }
     }
 
+
     /**
      * 下载本地系统文件
      *
@@ -325,7 +322,7 @@ public abstract class FileUtils {
                 // 下载文件
 
                 try (InputStream inputStream = new FileInputStream(filePath)) {
-                    setResponse(response, processFileName(fileName), previewFile);
+                    setResponse(response, encodeFileName(fileName), previewFile);
                     copy(inputStream, response.getOutputStream());
                 }
             }
@@ -362,6 +359,64 @@ public abstract class FileUtils {
         return null;
     }
 
+
+    /**
+     * 根据下载链接获取要下载文件的拓展名
+     *
+     * @param fileDownloadUrl
+     * @return
+     */
+    public static String getFileExtFromUrl(String fileDownloadUrl) {
+        if (StringUtils.isNotBlank(fileDownloadUrl)) {
+
+            int lastPathSeparatorIndex;
+            int lastDotIndex;
+            int questionMarkIndex;
+            String subString;
+            String fileExt;
+
+            if (fileDownloadUrl.indexOf("?") > 0) {
+                questionMarkIndex = fileDownloadUrl.indexOf("?");
+            } else {
+                questionMarkIndex = fileDownloadUrl.length();
+            }
+
+            // 从 url 域名后的最后一个 / 开始截取，有 ? 截取到 ? 前面一个字符截至，没有 ? 就截取到 url 结尾处
+            // 截取后的字符串中查找最后一个 . 后面的字符串
+            // xxx.com/111.pdf
+            // xxx.com/download?filename=111.pdf
+            if ((lastPathSeparatorIndex = fileDownloadUrl.lastIndexOf('/')) > 0
+                    && (lastDotIndex = (subString = fileDownloadUrl.substring(lastPathSeparatorIndex, questionMarkIndex)).lastIndexOf(".")) > 0) {
+
+                fileExt = subString.substring(lastDotIndex + 1);
+
+                if (fileExt != null) {
+                    fileExt = fileExt.toLowerCase();
+
+                    if (ArrayUtils.contains(FileUtils.previewExtensions, fileExt)) {
+                        return fileExt;
+                    }
+                }
+            }
+
+            // 域名后面没有找到拓展名，则将 ? 后面的字符串按照 & 分割成数组，查看每个参数里面是否能找到拓展名
+            if (questionMarkIndex < fileDownloadUrl.length()) {
+                String[] substrings = fileDownloadUrl.substring(questionMarkIndex).split("&");
+                for (String substr : substrings) {
+                    if ((lastDotIndex = substr.lastIndexOf('.')) > 0
+                            && ArrayUtils.contains(previewExtensions, (fileExt = substr.substring(lastDotIndex + 1).toLowerCase()))) {
+                        return fileExt;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        return null;
+    }
+
+
     /**
      * 获取 mimeType
      *
@@ -370,8 +425,9 @@ public abstract class FileUtils {
      */
     public static String getMimeType(String fileName) {
         if (StringUtils.isNotBlank(fileName)) {
-            if (fileName.indexOf('.') >= 0) {
-                return FileExtensionsUtil.fileExtensionMap.get(fileName.substring(fileName.indexOf('.') + 1));
+            int index;
+            if ((index = fileName.lastIndexOf('.')) >= 0) {
+                return FileExtensionsUtil.fileExtensionMap.get(fileName.substring(index + 1));
             } else {
                 return FileExtensionsUtil.fileExtensionMap.get(fileName);
             }
@@ -391,29 +447,61 @@ public abstract class FileUtils {
         return mt != null && StringUtils.isNotBlank(mt.getExtension()) ? mt.getExtension().substring(1) : null;
     }
 
+
     /**
      * 处理文件名称，防止乱码
      *
      * @param fileName
      * @return
      */
-    public static String processFileName(String fileName) {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        if (request != null) {
-            String userAgent = request.getHeader("USER-AGENT");
+    public static String encodeFileName(String fileName) {
+        if (StringUtils.isNotBlank(fileName)) {
             try {
-                if (userAgent.toUpperCase().indexOf("MSIE") > 0) {
-                    fileName = URLEncoder.encode(fileName, "UTF-8");
-                } else {
-                    // Google Chrome 浏览器使用 fileName = URLEncoder.encode(fileName, "UTF-8");
-                    fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
-                }
+                fileName = URLEncoder.encode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
         return fileName;
     }
+
+
+    /**
+     * 处理文件名称，防止乱码
+     *
+     * @param fileName
+     * @return
+     */
+    public static String encodeFileName2(String fileName) {
+        if (StringUtils.isNotBlank(fileName)) {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            if (request != null) {
+                String userAgent = request.getHeader("USER-AGENT");
+                try {
+                    userAgent = userAgent.toLowerCase();
+                    /*if (userAgent.contains("msie")) {
+                        // IE Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko
+                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                    } else*/
+                    if (userAgent.contains("firefox")) {
+                        // 火狐 Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0
+                        fileName = URLEncoder.encode(fileName, "UTF-8");
+
+                    } else if (userAgent.contains("chrome")) {
+                        // Google:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 Edg/81.0.416.77
+                        // 也可以写成：fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
+                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                    } else {
+                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return fileName;
+    }
+
 
     /**
      * 设置文件下载时的请求响应流
@@ -438,6 +526,7 @@ public abstract class FileUtils {
         }
     }
 
+
     /**
      * 获取临时文件目录
      *
@@ -448,6 +537,7 @@ public abstract class FileUtils {
         String tmpdir = System.getProperty("user.dir") + File.separator;
         return tmpdir;
     }
+
 
     /**
      * 输入流转输出流

@@ -22,7 +22,7 @@ public abstract class CommandUtils {
      * @param command
      */
     public static void execCommand(String command) throws IOException, InterruptedException {
-        log.info("execute file format convert command: {}.", command);
+        log.info("execute file format convert command: {}", command);
         String osName = System.getProperty("os.name");
         ProcessBuilder builder;
 

@@ -14,6 +14,7 @@ public class ErrorController {
         return "403";
     }
 
+
     /**
      * 404 页面
      */
@@ -21,6 +22,7 @@ public class ErrorController {
     public String error404() {
         return "404";
     }
+
 
     /**
      * 500 页面

@@ -29,7 +29,6 @@ public class FileDownloadController {
     @GetMapping("/download")
     public ResponseEntity filePreview(@RequestParam String fileUrl,
                                       @RequestParam(required = false, defaultValue = "") String fileName,
-                                      @RequestParam(required = false, defaultValue = "") String fileExt,
                                       HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
         FileUtils.downloadFileFromURLUsingNIO(fileUrl, fileName, false, response);
         return ResponseEntity.ok().build();
