@@ -14,6 +14,7 @@ public abstract class FileExtensionsUtil {
 
     static {
         fileExtensionMap = new HashMap<>();
+
         // MS Office
         fileExtensionMap.put("doc", "application/msword");
         fileExtensionMap.put("dot", "application/msword");
@@ -41,6 +42,7 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("pptm", "application/vnd.ms-powerpoint.presentation.macroEnabled.12");
         fileExtensionMap.put("potm", "application/vnd.ms-powerpoint.presentation.macroEnabled.12");
         fileExtensionMap.put("ppsm", "application/vnd.ms-powerpoint.slideshow.macroEnabled.12");
+
         // Open Office
         fileExtensionMap.put("odt", "application/vnd.oasis.opendocument.text");
         fileExtensionMap.put("ott", "application/vnd.oasis.opendocument.text-template");
@@ -57,6 +59,7 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("odb", "application/vnd.oasis.opendocument.database");
         fileExtensionMap.put("odi", "application/vnd.oasis.opendocument.image");
         fileExtensionMap.put("oxt", "application/vnd.openofficeorg.extension");
+
         // Other
         fileExtensionMap.put("txt", "text/plain");
         fileExtensionMap.put("rtf", "application/rtf");
@@ -66,16 +69,54 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("html", "text/html");
         fileExtensionMap.put("xhtml", "text/html");
         fileExtensionMap.put("xml", "text/xml");
+        fileExtensionMap.put("sh", "text/x-shellscript");
+        fileExtensionMap.put("py", "text/x-python");
+        fileExtensionMap.put("java", "text/x-java-source");
+        fileExtensionMap.put("sql", "text/x-sql");
+        fileExtensionMap.put("php", "text/x-php");
+
         // Image
         fileExtensionMap.put("jpg", "image/jpeg");
         fileExtensionMap.put("jpeg", "image/jpeg");
         fileExtensionMap.put("png", "image/png");
+        fileExtensionMap.put("bmp", "mage/x-ms-bmp");
         fileExtensionMap.put("tif", "image/tiff");
         fileExtensionMap.put("gif", "image/gif");
+        fileExtensionMap.put("psd", "image/vnd.adobe.photoshop");
+
         // Video
         fileExtensionMap.put("mp4", "video/mpeg4");
+        fileExtensionMap.put("avi", "video/x-msvideo");
+        fileExtensionMap.put("dv", "video/x-dv");
+        fileExtensionMap.put("mpeg", "video/mpeg");
+        fileExtensionMap.put("mpg", "video/mpeg");
+        fileExtensionMap.put("mov", "video/quicktime");
+        fileExtensionMap.put("wm", "video/x-ms-wmv");
+        fileExtensionMap.put("flv", "video/x-flv");
+        fileExtensionMap.put("mkv", "video/x-matroska");
+
         // Audio
         fileExtensionMap.put("mp3", "audio/mp3");
+        fileExtensionMap.put("mid", "audio/midi");
+        fileExtensionMap.put("ogg", "audio/ogg");
+        fileExtensionMap.put("mp4a", "audio/mp4");
+        fileExtensionMap.put("wav", "audio/wav");
+        fileExtensionMap.put("wma", "audio/x-ms-wma");
+
+        // Compressed File
+        fileExtensionMap.put("zip", "application/zip");
+        fileExtensionMap.put("rar", "application/x-rar-compressed");
+        fileExtensionMap.put("z", "application/x-compress");
+        fileExtensionMap.put("7z", "application/x-7z-compressed");
+        fileExtensionMap.put("tar", "application/x-tar");
+        fileExtensionMap.put("gz", "application/x-gzip");
+        fileExtensionMap.put("tgz", "application/x-gtar");
+        fileExtensionMap.put("gtar", "application/x-gtar");
+        fileExtensionMap.put("bz", "application/x-bzip2");
+        fileExtensionMap.put("bz2", "application/x-bzip2");
+        fileExtensionMap.put("tbz", "application/x-bzip2");
+        fileExtensionMap.put("jar", "application/java-archive");
+
     }
 
     public static String getExt(String contentType) {
