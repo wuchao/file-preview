@@ -91,9 +91,14 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("mpeg", "video/mpeg");
         fileExtensionMap.put("mpg", "video/mpeg");
         fileExtensionMap.put("mov", "video/quicktime");
-        fileExtensionMap.put("wm", "video/x-ms-wmv");
+        fileExtensionMap.put("wma", "video/wma");
+        fileExtensionMap.put("mts", "video/vnd.dlna.mpeg-tts");
+        fileExtensionMap.put("webm", "video/webm");
+        fileExtensionMap.put("wmv", "video/x-ms-wmv");
         fileExtensionMap.put("flv", "video/x-flv");
         fileExtensionMap.put("mkv", "video/x-matroska");
+        fileExtensionMap.put("3gp", "video/3gpp");
+        fileExtensionMap.put("vob", "video/vob");
 
         // Audio
         fileExtensionMap.put("mp3", "audio/mp3");
@@ -116,6 +121,8 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("bz2", "application/x-bzip2");
         fileExtensionMap.put("tbz", "application/x-bzip2");
         fileExtensionMap.put("jar", "application/java-archive");
+
+        fileExtensionMap.put("gzip", "application/java-archive");
 
     }
 

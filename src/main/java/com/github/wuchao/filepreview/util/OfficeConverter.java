@@ -16,11 +16,11 @@ public class OfficeConverter {
     private static final Logger log = LoggerFactory.getLogger(OfficeConverter.class);
 
     /**
-     * LibreOffice 的 bin 目录
+     * LibreOffice 的 office 文档转 pdf 文档命令
      */
     private static String office2PDFCommand;
 
-    @Value("${file.office-to-pdf-command}")
+    @Value("${libre-office.convert-command.office-to-pdf}")
     public void setOffice2PDFCommand(String office2PDFCommand) {
         OfficeConverter.office2PDFCommand = office2PDFCommand;
     }
@@ -47,7 +47,7 @@ public class OfficeConverter {
      */
     public static String convertOfficeByLibreOffice(String sourcePath, String targetDir, String targetFormat) throws IOException, InterruptedException {
         if (StringUtils.isBlank(sourcePath) || sourcePath.contains(" ")) {
-            throw new RuntimeException("Error:文件名不能包含空格");
+            throw new RuntimeException("Error:文件名不能为空且不能包含空格");
         }
         if (StringUtils.isBlank(targetFormat)) {
             throw new RuntimeException("Error:目标类型不能为空");
@@ -66,7 +66,7 @@ public class OfficeConverter {
             targetDir = sourcePath.substring(0, fileFileLastSeparatorIndex);
         }
 
-        // libre office 文档格式转换命令
+        // libreoffice 文档格式转换命令
         String command = String.format(office2PDFCommand, targetFormat, sourcePath, targetDir);
 
         if (StringUtils.isNotBlank(command)) {
@@ -75,10 +75,12 @@ public class OfficeConverter {
             // 执行文档转换命令
             CommandUtils.execCommand(command);
 
-            // 返回转换后的目标文件的文件路径
+            // 返回转换后的目标文件路径
             return new StringBuilder()
                     .append(targetDir)
+                    // 检查是否需要拼接路径分隔符
                     .append(targetDir.endsWith(File.separator) ? "" : File.separator)
+                    // 替换文件拓展名
                     .append(sourcePath
                             .substring(fileFileLastSeparatorIndex + 1)
                             .replace(sourcePath.substring(sourcePath.lastIndexOf('.') + 1), targetFormat))

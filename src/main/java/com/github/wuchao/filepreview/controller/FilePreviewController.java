@@ -63,8 +63,7 @@ public class FilePreviewController {
 
         if (StringUtils.isNotBlank(viewTemplatePrefix)) {
             model.addAttribute("fileUrl",
-                    "/previewFile?fileUrl=" + fileUrl
-                            + "&fileName=" + fileName);
+                    "/previewFile?fileUrl=" + fileUrl + "&fileName=" + fileName);
 
             return viewTemplatePrefix + "-preview";
         }

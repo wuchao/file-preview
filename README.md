@@ -6,8 +6,8 @@
 
 http://localhost:8088/onlinePreview?fileUrl=https://gitee.com/wu726/web-project/raw/master/core/DocxResume.docx&fileName=DocxResume.docx
 
-- fileUrl：远程文件地址（required = true）
-- fileName：自定义的下载文件名称，要带拓展名（required = false）
+- fileUrl：远程文件（下载）地址
+- fileName：文件名称（带拓展名）
 
 ### PDF 前段预览插件
 [PDFObject](https://pdfobject.com/)（使用）

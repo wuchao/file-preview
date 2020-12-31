@@ -85,25 +85,12 @@ public abstract class FileUtils {
      * @param fileName 自定义的文件名称
      * @param response
      */
-    public static void previewFile(String fileUrl, String fileName, HttpServletResponse response) throws IOException, InterruptedException, MimeTypeException {
-        previewFileUsingNIO(fileUrl, fileName, response);
-    }
-
-
-    /**
-     * @param filePath 源文件地址
-     * @return 转换后的目标文件地址
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    public static String convertFileFormat(String filePath) throws IOException, InterruptedException {
-        String fileExt = getFileExt(filePath);
-        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
-            // 转换文件
-            return OfficeConverter.convertOfficeByLibreOffice(filePath, null, Constants.FILE_EXT_PDF);
-        } else {
-            return filePath;
+    public static void previewFile(String fileUrl, String fileName, HttpServletResponse response) throws IOException, InterruptedException {
+        if (StringUtils.isNotBlank(fileName)) {
+            // 取消文件名称中的空格
+            fileName = fileName.trim().replace(" ", "");
         }
+        previewFileUsingNIO(fileUrl, fileName, response);
     }
 
 
@@ -121,7 +108,7 @@ public abstract class FileUtils {
 
         if (StringUtils.isNotBlank(fileUrl) && StringUtils.isNotBlank(fileName)) {
 
-            String filePath = getTempDir() + fileName;
+            String filePath = SystemPropertyUtil.getTempDir() + fileName;
             ReadableByteChannel readChannel = null;
             FileChannel writeChannel = null;
 
@@ -130,6 +117,7 @@ public abstract class FileUtils {
 
             try (InputStream urlInputStream = new URL(fileUrl).openStream();
                  FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
+
                 readChannel = Channels.newChannel(urlInputStream);
                 writeChannel = fileOutputStream.getChannel();
 
@@ -137,7 +125,6 @@ public abstract class FileUtils {
 
                 if (size > 0) {
                     log.info("download file from URL using NIO.");
-
                     downloadFileFromLocalSystem(filePath, fileName, true, response);
                 }
 
@@ -155,8 +142,8 @@ public abstract class FileUtils {
                 if (readChannel != null) {
                     readChannel.close();
                 }
-                // 删除源文件
                 if (StringUtils.isNotBlank(filePath)) {
+                    // 删除源文件
                     org.apache.commons.io.FileUtils.deleteQuietly(new File(filePath));
                 }
             }
@@ -187,30 +174,11 @@ public abstract class FileUtils {
             // 防止屏蔽程序抓取而返回403错误
             conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 
-            /*// 文件名
-            if (StringUtils.isBlank(fileName)) {
-                if (fileUrl.lastIndexOf(".") > 0) {
-                    fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-                }
-                if (StringUtils.isBlank(fileName) && conn.getHeaderField("Content-Disposition") != null) {
-                    String contentDisposition = new String(conn
-                            .getHeaderField("Content-Disposition")
-                            .getBytes("ISO-8859-1"), "GBK");
-                    fileName = contentDisposition.substring(contentDisposition.indexOf("filename=") + ("filename=".length()));
-                }
-            }
-
-            // 文件拓展名
-            String fileExt = getFileExtByMimeType(conn.getContentType());
-            if (StringUtils.isBlank(fileExt)) {
-                fileExt = getFileExt(fileName);
-            }*/
-
             try (InputStream inputStream = conn.getInputStream()) {
 
                 log.info("download file from URL using URLConnection.");
 
-                String filePath = getTempDir() + fileName;
+                String filePath = SystemPropertyUtil.getTempDir() + fileName;
 
                 // 下载文件到本地
                 try (FileOutputStream outputStream = new FileOutputStream(filePath);
@@ -235,7 +203,26 @@ public abstract class FileUtils {
 
 
     /**
-     * 下载本地系统文件
+     * 转换文件格式
+     *
+     * @param filePath 源文件地址
+     * @return 转换后的目标文件地址
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static String convertFileFormat(String filePath) throws IOException, InterruptedException {
+        String fileExt = getFileExt(filePath);
+        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
+            // 转换文件
+            return OfficeConverter.convertOfficeByLibreOffice(filePath, null, Constants.FILE_EXT_PDF);
+        } else {
+            return filePath;
+        }
+    }
+
+
+    /**
+     * 从服务器下载文件到浏览器
      *
      * @param filePath
      * @param fileName
@@ -248,13 +235,17 @@ public abstract class FileUtils {
                                                    HttpServletResponse response) throws IOException, InterruptedException {
 
         if (StringUtils.isNotBlank(filePath)) {
+            log.info("文件地址：{}", filePath);
+
             // 文件拓展名
             String fileExt = getFileExt(filePath);
 
             if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
                 // 预览文件
 
+                // 转换文件格式
                 String targetFilepath = convertFileFormat(filePath);
+
                 try {
                     downloadFileFromLocalSystem(targetFilepath, null, true, response);
                 } finally {
@@ -477,18 +468,6 @@ public abstract class FileUtils {
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
         }
-    }
-
-
-    /**
-     * 获取临时文件目录
-     *
-     * @return
-     */
-    public static String getTempDir() {
-//        String tmpdir = System.getProperty("java.io.tmpdir");
-        String tmpdir = System.getProperty("user.dir") + File.separator;
-        return tmpdir;
     }
 
 

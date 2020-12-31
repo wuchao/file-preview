@@ -1,9 +1,11 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
-        maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+        maven { url "https://maven.aliyun.com/repository/public" }
         maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+        maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+        maven { url "https://maven.aliyun.com/repository/spring" }
+        maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
         maven { url 'https://www.jitpack.io' }
     }
 
@@ -28,9 +30,11 @@ apply plugin: 'io.spring.dependency-management'
 
 repositories {
     mavenLocal()
-    maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
-    maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+    maven { url "https://maven.aliyun.com/repository/public" }
     maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+    maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+    maven { url "https://maven.aliyun.com/repository/spring" }
+    maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
     maven { url 'https://www.jitpack.io' }
 }
 
@@ -49,6 +53,8 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-api:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-core:${log4j_version}"
     compile "org.apache.tika:tika-core:${tika_core}"
+
+    compile "com.zaxxer:nuprocess:2.0.0"
 
     testCompile "junit:junit"
 }
