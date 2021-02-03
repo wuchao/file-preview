@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -42,7 +43,7 @@ public class HttpUtils {
                 Arrays.stream(urls).forEach(str -> {
                     try {
                         if (CHINESE_PATTERN.matcher(str).find()) {
-                            urlBuilder.append('/').append(URLEncoder.encode(str, "utf-8"));
+                            urlBuilder.append('/').append(URLEncoder.encode(str, StandardCharsets.UTF_8.name()));
                         } else {
                             urlBuilder.append('/').append(str);
                         }

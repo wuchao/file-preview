@@ -9,6 +9,7 @@ import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +23,7 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 
 public abstract class FileUtils {
 
@@ -401,7 +403,7 @@ public abstract class FileUtils {
     public static String encodeFileName(String fileName) {
         if (StringUtils.isNotBlank(fileName)) {
             try {
-                fileName = URLEncoder.encode(fileName, "UTF-8");
+                fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -425,18 +427,18 @@ public abstract class FileUtils {
                     userAgent = userAgent.toLowerCase();
                     /*if (userAgent.contains("msie")) {
                         // IE Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko
-                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                        fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
                     } else*/
                     if (userAgent.contains("firefox")) {
                         // 火狐 Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0
-                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                        fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
 
                     } else if (userAgent.contains("chrome")) {
                         // Google:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 Edg/81.0.416.77
-                        // 也可以写成：fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
-                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                        // 也可以写成：fileName = new String(fileName.getBytes(StandardCharsets.UTF_8.name()), "ISO8859-1");
+                        fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
                     } else {
-                        fileName = URLEncoder.encode(fileName, "UTF-8");
+                        fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
                     }
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -459,14 +461,14 @@ public abstract class FileUtils {
             // 预览文件
 
             String mimeType = getMimeType(fileName);
-            response.setContentType(mimeType + ";charset=UTF-8");
+            response.setContentType(mimeType + ";charset=" + StandardCharsets.UTF_8.name());
 
         } else {
             // 下载文件
 
-            response.setCharacterEncoding("UTF-8");
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName);
         }
     }
 
