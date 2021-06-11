@@ -92,6 +92,7 @@ public class FilePreviewController {
             FileUtils.previewFile(fileUrl, fileName, response);
         } catch (Exception e) {
             try {
+                e.printStackTrace();
                 log.error(e.getMessage());
                 if (e.getMessage().contains("response code: 403")) {
                     response.sendRedirect("/403");
@@ -99,7 +100,7 @@ public class FilePreviewController {
                     response.sendRedirect("/500");
                 }
             } catch (IOException ex) {
-                log.error(ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }

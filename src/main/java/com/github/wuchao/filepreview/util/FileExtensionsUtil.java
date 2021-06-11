@@ -79,10 +79,29 @@ public abstract class FileExtensionsUtil {
         fileExtensionMap.put("jpg", "image/jpeg");
         fileExtensionMap.put("jpeg", "image/jpeg");
         fileExtensionMap.put("png", "image/png");
-        fileExtensionMap.put("bmp", "mage/x-ms-bmp");
-        fileExtensionMap.put("tif", "image/tiff");
+        fileExtensionMap.put("bmp", "image/x-ms-bmp");
+        fileExtensionMap.put("ico", "image/icon");
         fileExtensionMap.put("gif", "image/gif");
+        fileExtensionMap.put("tif", "image/tiff");
+        // image/psd、image/photoshop、image/x-photoshot
         fileExtensionMap.put("psd", "image/vnd.adobe.photoshop");
+        fileExtensionMap.put("psb", "image/vnd.adobe.photoshop");
+        fileExtensionMap.put("pdd", "image/vnd.adobe.photoshop");
+        fileExtensionMap.put("pcx", "image/pcx");
+//        fileExtensionMap.put("pxr", "image/vnd.adobe.photoshop");
+//        fileExtensionMap.put("raw", "image/vnd.adobe.photoshop");
+        fileExtensionMap.put("ps", "application/postscript");
+        fileExtensionMap.put("eps", "application/postscript");
+        fileExtensionMap.put("dxf", "image/vnd-dxf");
+        fileExtensionMap.put("dwg", "image/vnd-dwg");
+        fileExtensionMap.put("dwt", "image/vnd-dwg");
+        fileExtensionMap.put("tga", "image/x-targa");
+        fileExtensionMap.put("xpm", "image/x-xpm");
+        fileExtensionMap.put("svg", "image/svg+xml");
+        fileExtensionMap.put("wmf", "image/x-wmf");
+        fileExtensionMap.put("cgm", "image/cgm");
+        fileExtensionMap.put("cpi", "image/cpi");
+        fileExtensionMap.put("cpc", "image/cpi");
 
         // Video
         fileExtensionMap.put("mp4", "video/mpeg4");
