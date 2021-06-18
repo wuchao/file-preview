@@ -4,6 +4,7 @@ import com.github.wuchao.filepreview.common.Constants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
@@ -110,7 +111,7 @@ public abstract class FileUtils {
 
         if (StringUtils.isNotBlank(fileUrl) && StringUtils.isNotBlank(fileName)) {
 
-            String filePath = SystemPropertyUtil.getTempDir() + fileName;
+            String filePath = getTempDir() + fileName;
             ReadableByteChannel readChannel = null;
             FileChannel writeChannel = null;
 
@@ -180,7 +181,7 @@ public abstract class FileUtils {
 
                 log.info("download file from URL using URLConnection.");
 
-                String filePath = SystemPropertyUtil.getTempDir() + fileName;
+                String filePath = getTempDir() + fileName;
 
                 // 下载文件到本地
                 try (FileOutputStream outputStream = new FileOutputStream(filePath);
@@ -485,6 +486,20 @@ public abstract class FileUtils {
         if (i == -1) {
             IOUtils.copyLarge(inputStream, outputStream);
         }
+    }
+
+
+    /**
+     * 获取系统临时目录
+     *
+     * @return
+     */
+    public static String getTempDir() {
+        String tempDir = SystemUtils.JAVA_IO_TMPDIR;
+        if (!tempDir.endsWith(File.separator)) {
+            tempDir += File.separator;
+        }
+        return tempDir;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.github.wuchao.filepreview.util;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +26,10 @@ public abstract class CommandUtils {
      */
     static ProcessBuilder getProcessBuilder(String command) {
         ProcessBuilder processBuilder;
-        SystemPropertyUtil.OS os = SystemPropertyUtil.getOS();
 
-        if (SystemPropertyUtil.OS.WINDOWS.equals(os)) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             processBuilder = new ProcessBuilder("cmd.exe", "/c", command);
-        } else if (SystemPropertyUtil.OS.LINUX.equals(os)) {
+        } else if (SystemUtils.IS_OS_LINUX) {
             processBuilder = new ProcessBuilder("sh", "-c", command);
         } else {
             throw new RuntimeException("暂时只测试过 Windows 和 Linux 服务器");
@@ -68,6 +68,23 @@ public abstract class CommandUtils {
 
         // 调用 waitFor 方法，主进程会等待子进程的命令执行完成，成功会返回 true
         process.waitFor(10, TimeUnit.SECONDS);
+
+        // 杀死子进程
+        process.destroy();
+        // 休眠 1s
+        Thread.sleep(1000);
+        // 判断 process 代表的子进程是否存活
+        if (process.isAlive()) {
+            // 强制杀死子进程
+            process.destroyForcibly();
+        }
+
+        /**
+         * jdk9 之后杀死进程可以这样：
+         * ProcessHandle handle = p.toHandle();
+         * handle.destroy();
+         * handle.descendants().forEach(ProcessHandle::destroy);
+         */
     }
 
 

@@ -58,3 +58,7 @@ dependencies {
 
     testCompile "junit:junit"
 }
+
+wrapper {
+    gradleVersion = '6.5'
+}
