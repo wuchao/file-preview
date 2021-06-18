@@ -4,7 +4,7 @@
 
 预览方式（以本地启动为例）：
 
-http://localhost:8088/onlinePreview?fileUrl=https://gitee.com/wu726/web-project/raw/master/core/DocxResume.docx&fileName=DocxResume.docx
+http://localhost:8088/onlinePreview?fileUrl=https://gitee.com/wu726/file-preview/blob/master/src/main/resources/static/files/DocxResume.docx&fileName=DocxResume.docx
 
 - fileUrl：远程文件（下载）地址
 - fileName：文件名称（带拓展名）
