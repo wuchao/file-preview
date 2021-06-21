@@ -1,6 +1,6 @@
 # file-preview
 
-文件在线预览，支持预览格式：pdf、doc/docx、xsl/xslx、ppt/pptx、txt、图片(png、jpg、jpeg、gif...)、压缩文件（zip、tar、7z...）。
+文件在线预览，支持预览格式：pdf、doc/docx、xsl/xslx、ppt/pptx、txt、CAD、图片(png、jpg、jpeg、gif...)、压缩文件（zip、tar、7z...）。
 
 预览方式（以本地启动为例）：
 

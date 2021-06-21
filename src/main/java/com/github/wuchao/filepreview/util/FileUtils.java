@@ -1,6 +1,5 @@
 package com.github.wuchao.filepreview.util;
 
-import com.github.wuchao.filepreview.common.Constants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,37 +33,65 @@ public abstract class FileUtils {
     }
 
     /**
-     * 所有可预览的文档格式
+     * 常见图片格式
      */
-    public static String[] previewExtensions = {
-            // pdf
-            "pdf",
-            // convertToPdfExtensions
-            "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-            // imageExtensions
-            "bmp", "jpg", "jpeg", "png", "gif",
-            // compressExtensions
-            "zip", "rar", "7z", "tar", "jar"
+    public static String[] IMAGE_EXTS = {
+            "bmp", "jpg", "jpeg", "png", "gif", "ico"
     };
 
     /**
-     * 需要转换成 PDF 格式预览的常见文档格式
+     * 常见 CAD 格式
      */
-    public static String[] convertToPdfExtensions = {"doc", "docx", "xls", "xlsx", "ppt", "pptx"};
+    public static String[] CAD_EXTS = {
+            "dwg", "dxf", "dng", "ifc", "stl"
+    };
 
     /**
-     * 常见图片格式
+     * 常见 office 格式
      */
-    public static String[] imageExtensions = {
-            "bmp", "jpg", "jpeg", "png", "gif"
+    public static String[] OFFICE_EXTS = {
+            "doc", "docx", "xls", "xlsx", "ppt", "pptx"
     };
 
     /**
      * 常见压缩格式
      */
-    public static String[] compressExtensions = {
+    public static String[] COMPRESS_EXTS = {
             "zip", "rar", "7z", "tar", "jar"
     };
+
+    public static final String PDF_EXT = "pdf";
+
+    public static final String DOC_EXT = "doc";
+
+    public static final String DOCX_EXT = "docx";
+
+    public static final String TXT_EXT = "txt";
+
+    /**
+     * 所有可预览的文档格式
+     */
+    public static String[] previewExtensions;
+
+    static {
+        previewExtensions = new String[IMAGE_EXTS.length +
+                IMAGE_EXTS.length +
+                CAD_EXTS.length +
+                OFFICE_EXTS.length +
+                COMPRESS_EXTS.length +
+                2];
+        previewExtensions = ArrayUtils.addAll(previewExtensions, IMAGE_EXTS);
+        previewExtensions = ArrayUtils.addAll(previewExtensions, CAD_EXTS);
+        previewExtensions = ArrayUtils.addAll(previewExtensions, OFFICE_EXTS);
+        previewExtensions = ArrayUtils.addAll(previewExtensions, COMPRESS_EXTS);
+        previewExtensions = ArrayUtils.add(previewExtensions, PDF_EXT);
+        previewExtensions = ArrayUtils.add(previewExtensions, TXT_EXT);
+    }
+
+    /**
+     * 需要转换成 PDF 格式预览的常见文档格式
+     */
+    public static String[] convertToPdfExtensions = {"doc", "docx", "xls", "xlsx", "ppt", "pptx"};
 
 
     /**
@@ -75,6 +102,8 @@ public abstract class FileUtils {
      */
     public static boolean shouldConvertPreviewFileFormat(String fileExt) {
         if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
+            return true;
+        } else if (ArrayUtils.contains(CAD_EXTS, fileExt)) {
             return true;
         }
         return false;
@@ -90,6 +119,8 @@ public abstract class FileUtils {
      */
     public static void previewFile(String fileUrl, String fileName, HttpServletResponse response) throws IOException, InterruptedException {
         if (StringUtils.isNotBlank(fileName)) {
+            // 转小写
+            fileName = fileName.toLowerCase();
             // 取消文件名称中的空格
             fileName = fileName.trim().replace(" ", "");
         }
@@ -209,18 +240,33 @@ public abstract class FileUtils {
      * 转换文件格式
      *
      * @param filePath 源文件地址
+     * @param fileExt  源文件拓展名
      * @return 转换后的目标文件地址
      * @throws IOException
      * @throws InterruptedException
      */
-    public static String convertFileFormat(String filePath) throws IOException, InterruptedException {
-        String fileExt = getFileExt(filePath);
-        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
-            // 转换文件
-            return OfficeConverter.convertOfficeByLibreOffice(filePath, null, Constants.FILE_EXT_PDF);
-        } else {
-            return filePath;
+    public static String convertFileFormat(String filePath, String fileExt) throws IOException, InterruptedException {
+        if (StringUtils.isBlank(fileExt)) {
+            fileExt = getFileExt(filePath);
         }
+
+        String targetFilePath;
+
+        if (ArrayUtils.contains(convertToPdfExtensions, fileExt)) {
+            // office 文件转成 pdf 格式
+            targetFilePath = OfficeConverter.convert(filePath, null, PDF_EXT);
+
+        } else if (ArrayUtils.contains(CAD_EXTS, fileExt)) {
+            // cad 文件（.dwg）转成图片格式
+//            targetFilePath = CADConverter.convert(filePath, null, FileUtils.PDF_EXT);
+            targetFilePath = CADConverter.convert(filePath, null, "png");
+
+        } else {
+            targetFilePath = null;
+        }
+
+        log.info("转换后的目标文件地址：{}", targetFilePath);
+        return targetFilePath;
     }
 
 
@@ -240,17 +286,26 @@ public abstract class FileUtils {
         if (StringUtils.isNotBlank(filePath)) {
             log.info("文件地址：{}", filePath);
 
-            // 文件拓展名
-            String fileExt = getFileExt(filePath);
 
-            if (previewFile && shouldConvertPreviewFileFormat(fileExt)) {
+            if (previewFile) {
                 // 预览文件
 
-                // 转换文件格式
-                String targetFilepath = convertFileFormat(filePath);
+                String targetFilepath = filePath;
+
+                // 文件拓展名
+                String fileExt;
+                if (shouldConvertPreviewFileFormat(fileExt = getFileExt(filePath))) {
+                    // 转换文件格式
+                    targetFilepath = convertFileFormat(filePath, fileExt);
+                    if (targetFilepath == null) {
+                        throw new RuntimeException("格式转换错误");
+                    }
+                }
 
                 try {
-                    downloadFileFromLocalSystem(targetFilepath, null, true, response);
+                    // 格式转换完成后，将转换后的文件输出到浏览器预览
+                    downloadFileFromLocalSystem(targetFilepath, null, false, response);
+
                 } finally {
                     // 删除目标文件
                     if (StringUtils.isNotBlank(targetFilepath)) {
@@ -259,15 +314,15 @@ public abstract class FileUtils {
                 }
 
             } else {
-                // 下载文件
-
-                // 文件名
-                if (StringUtils.isBlank(fileName)) {
-                    fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
-                }
+                // 下载文件（将文件从服务器输出到浏览器）
 
                 try (InputStream inputStream = new FileInputStream(filePath)) {
-                    setResponse(response, encodeFileName(fileName), previewFile);
+                    // 文件名
+                    if (StringUtils.isBlank(fileName)) {
+                        fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+                    }
+
+                    setResponse(response, fileName, previewFile);
                     copy(inputStream, response.getOutputStream());
                 }
             }
@@ -469,7 +524,7 @@ public abstract class FileUtils {
 
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName);
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + encodeFileName(fileName));
         }
     }
 
@@ -500,6 +555,28 @@ public abstract class FileUtils {
             tempDir += File.separator;
         }
         return tempDir;
+    }
+
+
+    /**
+     * 获取文件所在目录
+     *
+     * @param filePath
+     * @return
+     */
+    public static String getFileDir(String filePath) {
+//        int index;
+//        if (StringUtils.isBlank(filePath) || (index = filePath.lastIndexOf(File.separator)) < 0) {
+//            throw new RuntimeException("文件【" + filePath + "】路径错误");
+//        }
+//        return filePath.substring(0, filePath.lastIndexOf(File.separator) + 1);
+
+        File file = new File(filePath);
+        String fileDir = file.getParent();
+        if (!fileDir.endsWith(File.separator)) {
+            fileDir += File.separator;
+        }
+        return fileDir;
     }
 
 }

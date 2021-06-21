@@ -1,6 +1,5 @@
 package com.github.wuchao.filepreview.controller;
 
-import com.github.wuchao.filepreview.common.Constants;
 import com.github.wuchao.filepreview.util.FileUtils;
 import com.github.wuchao.filepreview.util.OfficeConverter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,24 +40,33 @@ public class FilePreviewController {
         String fileExt = FileUtils.getFileExt(fileName);
 
         if (!ArrayUtils.contains(FileUtils.previewExtensions, fileExt)) {
-            return "404";
+            throw new RuntimeException("该格式文件暂不支持预览");
         }
 
         fileExt = fileExt.toLowerCase();
         String viewTemplatePrefix = null;
-        if (Constants.FILE_EXT_PDF.equalsIgnoreCase(fileExt)
+
+        if (FileUtils.PDF_EXT.equalsIgnoreCase(fileExt)
                 || ArrayUtils.contains(FileUtils.convertToPdfExtensions, fileExt)) {
             // 预览 pdf 文件
             viewTemplatePrefix = "pdf";
-        } else if (Constants.FILE_EXT_TXT.equalsIgnoreCase(fileExt)) {
+
+        } else if (FileUtils.TXT_EXT.equalsIgnoreCase(fileExt)) {
             // 预览 txt 纯文本文件
             viewTemplatePrefix = fileExt;
-        } else if (ArrayUtils.contains(FileUtils.imageExtensions, fileExt)) {
+
+        } else if (ArrayUtils.contains(FileUtils.IMAGE_EXTS, fileExt)) {
             // 预览图片文件
             viewTemplatePrefix = "image";
-        } else if (ArrayUtils.contains(FileUtils.compressExtensions, fileExt)) {
+
+        } else if (ArrayUtils.contains(FileUtils.COMPRESS_EXTS, fileExt)) {
             // 预览压缩文件
             viewTemplatePrefix = "compress";
+
+        } else if (ArrayUtils.contains(FileUtils.CAD_EXTS, fileExt)) {
+            // 预览 CAD 文件
+//            viewTemplatePrefix = FileUtils.PDF_EXT;
+            viewTemplatePrefix = "image";
         }
 
         if (StringUtils.isNotBlank(viewTemplatePrefix)) {

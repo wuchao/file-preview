@@ -36,9 +36,12 @@ repositories {
     maven { url "https://maven.aliyun.com/repository/spring" }
     maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
     maven { url 'https://www.jitpack.io' }
+    maven { url 'http://repository.aspose.com/repo/' }
 }
 
 dependencies {
+    compile fileTree(dir: 'lib', include: ['*.jar'])
+
     compile "org.springframework.boot:spring-boot-starter-test"
     compile("org.springframework.boot:spring-boot-starter-web") {
         exclude module: 'spring-boot-starter-tomcat'
@@ -53,6 +56,11 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-api:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-core:${log4j_version}"
     compile "org.apache.tika:tika-core:${tika_core}"
+    // https://mvnrepository.com/artifact/org.apache.tika/tika-parsers
+    compile "org.apache.tika:tika-parsers:1.26"
+
+    // 从远程仓库下载依赖较慢，改成从项目中的 lib 导入依赖
+//    compile "com.aspose:aspose-cad:20.10"
 
     compile "com.zaxxer:nuprocess:2.0.0"
 

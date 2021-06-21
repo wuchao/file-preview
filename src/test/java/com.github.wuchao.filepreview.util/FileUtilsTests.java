@@ -2,6 +2,9 @@ package com.github.wuchao.filepreview.util;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+
 public class FileUtilsTests {
 
     /**
@@ -109,5 +112,25 @@ public class FileUtilsTests {
          */
     }
 
+
+    @Test
+    public void testFile() throws IOException {
+        File file = new File("D:\\IdeaProjects\\wuchao\\file-preview\\src\\test\\java\\com.github.wuchao.filepreview.util\\FileUtilsTests.java");
+        System.out.println(file.getName());
+        System.out.println(file.getAbsolutePath());
+        System.out.println(file.getCanonicalPath());
+        System.out.println(file.getParent());
+        System.out.println(file.getPath());
+
+        /**
+         * 执行结果：
+         *
+         * FileUtilsTests.java
+         * D:\IdeaProjects\wuchao\file-preview\src\test\java\com.github.wuchao.filepreview.util\FileUtilsTests.java
+         * D:\IdeaProjects\wuchao\file-preview\src\test\java\com.github.wuchao.filepreview.util\FileUtilsTests.java
+         * D:\IdeaProjects\wuchao\file-preview\src\test\java\com.github.wuchao.filepreview.util
+         * D:\IdeaProjects\wuchao\file-preview\src\test\java\com.github.wuchao.filepreview.util\FileUtilsTests.java
+         */
+    }
 
 }

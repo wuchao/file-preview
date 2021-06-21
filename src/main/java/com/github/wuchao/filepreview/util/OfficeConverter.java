@@ -45,7 +45,7 @@ public class OfficeConverter {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static String convertOfficeByLibreOffice(String sourcePath, String targetDir, String targetFormat) throws IOException, InterruptedException {
+    public static String convert(String sourcePath, String targetDir, String targetFormat) throws IOException, InterruptedException {
         if (StringUtils.isBlank(sourcePath) || sourcePath.contains(" ")) {
             throw new RuntimeException("Error:文件名不能为空且不能包含空格");
         }
